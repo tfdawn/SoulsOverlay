@@ -18,6 +18,9 @@ Supported games:
 - **Elden Ring**
 - **Dark Souls Remastered**
 - **Dark Souls II: Scholar of the First Sin**, including the DLCs
+  - ⚠️ It can't yet tell the **Twin Dragonriders** from the Heide's Tower **Dragonrider**, or the
+    DLC's **blue Smelter Demon** from the Iron Keep one, because the game gives them the same name.
+    Those fights share their deaths and PB.
 - **Dark Souls III** (WiP: not checked against the game yet, so it may need calibrating)
 
 > **Playing on ultrawide?** The presets are tested on 16:9 screens (2560x1440, 1920x1080 and
