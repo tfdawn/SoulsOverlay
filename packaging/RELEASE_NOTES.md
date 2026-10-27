@@ -1,13 +1,6 @@
-## What's in it
+## What's new in 1.0.1
 
-- **One-click updates:** the SoulsOverlay window tells you when a new version is out. Click **Update…**, confirm, and it restarts on the new version. Your settings and stats are kept.
-- **Characters:** keep separate deaths and PBs for each character, and switch between them at the top of the window.
-- **Settings** holds the **Overlay Editor** (colours, text and the NEW PB effect) and **Hotkeys**. You can change the keys, turn each hotkey on or off, and hover over one to see what it does.
-- **Colour themes** (Gold, Ice, Crimson, Emerald, Violet, Pink and White) recolour the whole HUD the same way, and **Text colours** lets you set each part on its own: the DEATHS word, death count, PB %, PB marker, NEW PB, DEFEATED and more.
-- **Games:** Elden Ring is first in the list, followed by Dark Souls Remastered, Dark Souls II and Dark Souls III in release order. The Dark Souls presets are marked WiP and haven't been tested in game yet; switching to one shows a warning first.
-- Closing the window keeps SoulsOverlay running in the tray, and says so. **Keep running in the tray** in Settings turns that off.
-- The window reminds you to use **Transform → Fit to screen** on the Browser source in OBS.
-- A shorter README with a banner.
+- A new install starts with a character called **Tarnished** instead of "Character 1". Existing characters keep their names; use **Rename** in the window to change one.
 
 ## How to install
 
