@@ -1,14 +1,9 @@
-## What's new in 1.0.2
+## What's new in 1.0.3
 
-- **Dark Souls Remastered is supported.** Deaths, boss names and boss health are now set up from real
-  game footage, so it's no longer marked as a work in progress. The preset matches an in-game HUD scale
-  of 0.80. If yours is different, open **Calibrate** and type your HUD scale in, or use **Auto-find boss bar**.
-- **Auto-find boss bar** on the Calibrate page finds the boss bar on a frame and places the boss boxes
-  for you. Grab a frame with a boss at full health (or just after its first hit), click it, check, then save.
-- Game presets you haven't calibrated yourself are now updated along with the app.
-- Boss names are recognised even when the text reader runs words together.
-- Updating no longer ends with a "Failed to remove temporary directory" warning. The fix is in the updater of the
-  version you update from, so you may still see it once when updating to this version.
+- **Fixed:** the SoulsOverlay window could freeze ("Not Responding") after being minimized.
+- SoulsOverlay now always opens **stopped**. Click **Start** when you want it to count.
+- **Dark Souls Remastered:** Ornstein and Smough's second health bar is now set up from a real screenshot.
+- Updating from this version on no longer ends with a "Failed to remove temporary directory" warning.
 
 ## How to install
 

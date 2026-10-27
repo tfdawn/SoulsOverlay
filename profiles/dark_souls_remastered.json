@@ -1,7 +1,7 @@
 {
   "id": "dark_souls_remastered",
   "name": "Dark Souls Remastered",
-  "notes": "Calibrated from 2560x1440 Asylum Demon screenshots and a 1080p death clip at the in-game HUD scale of 0.80. The HUD scale also resizes the boss bar and name (about the bottom centre of the screen, checked at 0.65 and 1.00) and YOU DIED (about the centre, checked at 1.00), so hud_scale lets the calibration page move those boxes for any HUD scale. The second boss slot (Ornstein and Smough) is an estimate one row above the first.",
+  "notes": "Calibrated from 2560x1440 Asylum Demon screenshots and a 1080p death clip at the in-game HUD scale of 0.80. The HUD scale also resizes the boss bar and name (about the bottom centre of the screen, checked at 0.65 and 1.00) and YOU DIED (about the centre, checked at 1.00), so hud_scale lets the calibration page move those boxes for any HUD scale. The second boss slot (Ornstein and Smough) is from a 1440p shot at HUD scale 1.00, scaled to 0.80.",
   "hud_scale": {
     "value": 0.8,
     "min": 0.65,
@@ -41,13 +41,13 @@
     {
       "name": [
         0.33,
-        0.748,
+        0.7563,
         0.3,
         0.036
       ],
       "bar": [
         0.348,
-        0.7956,
+        0.8039,
         0.411,
         0.0056
       ]

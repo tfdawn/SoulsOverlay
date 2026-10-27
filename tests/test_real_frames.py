@@ -176,3 +176,25 @@ def test_dsr_death_follows_the_hud_scale(dsr, width):
     moved.update({"regions": {"death": [ax + (x - ax) * k, ay + (y - ay) * k, w * k, h * k]}})
     hit, score = Analyzer(moved).death.detect(img)
     assert hit and score > 0.6
+
+
+@needs_tesseract
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+def test_dsr_duo_at_hud_scale_one(dsr, width):
+    """Ornstein and Smough at HUD scale 1.00: the boxes typed in for 1.00 and the
+    ones Auto-find places both read the two bars and both names."""
+    from soulsoverlay.detect.autofind import auto_find
+    from soulsoverlay.profiles import Profile
+
+    img = cv2.imread(str(FIX / "dsr_ons_hud100_1080p.jpg"))
+    img = cv2.resize(img, (width, width * 9 // 16), interpolation=cv2.INTER_AREA)
+    k = 1.0 / dsr.data["hud_scale"]["value"]
+    ax, ay = dsr.data["hud_scale"]["anchor"]
+    typed = [{key: [ax + (r[0] - ax) * k, ay + (r[1] - ay) * k, r[2] * k, r[3] * k] for key, r in s.items()}
+             for s in dsr.boss_slots]
+    found = auto_find(img, dsr.data).boss_slots
+    for slots in (typed, found):
+        reading = Analyzer(Profile({**dsr.raw, "boss_slots": slots})).analyze(img, force_ocr=True)
+        assert [s.pct for s in reading.slots] == [pytest.approx(100, abs=1)] * 2
+        assert [s.text for s in reading.slots] == ["Executioner Smough", "Dragon Slayer Ornstein"]
+        assert all(s.match.boss == "Ornstein and Smough" for s in reading.slots)

@@ -68,10 +68,10 @@ class Backend:
 
         cfg = self.cfg
         self.service = Service(cfg)
-        if cfg.path is not None and not cfg.path.exists():
-            # First start: wait for the OBS details instead of trying without a password.
-            self.service.stopped = True
-            self.service.status["capture"] = "stopped"
+        # The window always opens stopped: counting starts when you click Start
+        # (on the first start, after the OBS details are saved).
+        self.service.stopped = True
+        self.service.status["capture"] = "stopped"
         server = OverlayServer(self.service, cfg.control_token())
         server.updater = updater.Updater()
         server.on_update_ready = lambda: self.on_update_ready and self.on_update_ready()
@@ -112,7 +112,7 @@ class Api:
     def __init__(self, cfg):
         self._cfg = cfg
         self._path = cfg.data_dir / "launcher.json"
-        self.window = None
+        self._window = None  # private: pywebview walks public attributes of js_api
 
     def get_prefs(self) -> dict:
         try:
@@ -130,8 +130,8 @@ class Api:
         return prefs
 
     def hide_window(self):
-        if self.window:
-            self.window.hide()
+        if self._window:
+            self._window.hide()
 
     def open_url(self, url: str):
         if url.startswith("http://127.0.0.1:"):
@@ -218,7 +218,7 @@ def run(cfg, after_update: bool = False):
     window = webview.create_window(
         "SoulsOverlay", backend.url("launcher"), js_api=api, width=480, height=760,
         min_size=(420, 520), background_color="#0b0908")
-    api.window = window
+    api._window = window
     quitting = False
 
     def quit_app():
