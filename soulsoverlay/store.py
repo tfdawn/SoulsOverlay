@@ -70,7 +70,7 @@ CREATE TABLE IF NOT EXISTS kills (
 );
 """
 
-DEFAULT_CHARACTER = "Character 1"
+DEFAULT_CHARACTER = "Tarnished"
 
 
 def _now() -> str:
@@ -106,7 +106,7 @@ class Store:
         self.db.commit()
 
     def _migrate(self):
-        """Databases from before characters (earlier versions): their stats become Character 1."""
+        """Databases from before characters (earlier versions): their stats go to the first character."""
         for table in ("deaths", "kills"):
             cols = {r["name"] for r in self.db.execute(f"PRAGMA table_info({table})")}
             if "character_id" not in cols:

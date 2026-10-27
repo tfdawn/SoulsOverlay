@@ -94,7 +94,7 @@ def test_characters_keep_separate_stats(tmp_path):
     s = Store(tmp_path / "db.sqlite3")
     s.ensure_game("elden_ring", "Elden Ring")
     first = s.character("elden_ring")
-    assert first["name"] == "Character 1"
+    assert first["name"] == "Tarnished"
     s.record_death("elden_ring", "Margit", 1, 40.0)
     s.record_death("elden_ring", "Margit", 1, 20.0)
     second = s.add_character("elden_ring", "  Strength   build ")
@@ -135,6 +135,6 @@ def test_old_database_becomes_character_1(tmp_path):
     """)
     db.commit(); db.close()
     s = Store(path)
-    assert s.character("elden_ring") == {"id": 1, "name": "Character 1", "deaths": 2, "active": True}
+    assert s.character("elden_ring") == {"id": 1, "name": "Tarnished", "deaths": 2, "active": True}
     stats = s.boss_stats("elden_ring", "Margit")
     assert stats["deaths"] == 2 and stats["killed"]
