@@ -1,45 +1,63 @@
 {
   "id": "dark_souls_2",
   "name": "Dark Souls II",
-  "notes": "Regions are first estimates for a 16:9 frame (copied from Dark Souls Remastered) and need checking with the calibration page against real screenshots. Covers Scholar of the First Sin and the DLCs.",
+  "notes": "Calibrated from 1080p Scholar of the First Sin footage (Dragonrider fight and death, a three-bar Ruin Sentinels shot, and a no-boss walk). DSII has no HUD scale setting, so the boxes are fixed for 16:9. Extra boss bars stack upwards, 0.0685 of the frame height apart. Covers the original game, Scholar of the First Sin and the three DLCs.",
   "regions": {
     "death": [
-      0.25,
-      0.42,
-      0.5,
-      0.16
+      0.29,
+      0.64,
+      0.4,
+      0.175
     ]
   },
   "boss_slots": [
     {
       "name": [
-        0.18,
-        0.842,
-        0.36,
-        0.032
+        0.278,
+        0.808,
+        0.32,
+        0.034
       ],
       "bar": [
-        0.185,
-        0.878,
-        0.63,
-        0.012
+        0.2901,
+        0.8528,
+        0.5182,
+        0.0074
       ]
     },
     {
       "name": [
-        0.18,
-        0.792,
-        0.36,
-        0.032
+        0.278,
+        0.7395,
+        0.32,
+        0.034
       ],
       "bar": [
-        0.185,
-        0.828,
-        0.63,
-        0.012
+        0.2901,
+        0.7843,
+        0.5182,
+        0.0074
+      ]
+    },
+    {
+      "name": [
+        0.278,
+        0.671,
+        0.32,
+        0.034
+      ],
+      "bar": [
+        0.2901,
+        0.7158,
+        0.5182,
+        0.0074
       ]
     }
   ],
+  "death": {
+    "template": "templates/dark_souls_2_death.png",
+    "threshold": 0.4
+  },
   "bosses": [
     {
       "name": "The Last Giant"
@@ -58,10 +76,20 @@
     },
     {
       "name": "Ruin Sentinels",
-      "bars": 2
+      "aliases": [
+        "Ruin Sentinel Yahim",
+        "Ruin Sentinel Alessia",
+        "Ruin Sentinel Ricce",
+        "Ruin Sentinel"
+      ],
+      "bars": 3
     },
     {
-      "name": "Belfry Gargoyles"
+      "name": "Belfry Gargoyles",
+      "aliases": [
+        "Belfry Gargoyle"
+      ],
+      "bars": 2
     },
     {
       "name": "Lost Sinner"
@@ -71,7 +99,10 @@
     },
     {
       "name": "Skeleton Lords",
-      "bars": 2
+      "aliases": [
+        "Skeleton Lord"
+      ],
+      "bars": 3
     },
     {
       "name": "Covetous Demon"
@@ -92,7 +123,10 @@
       "name": "Royal Rat Authority"
     },
     {
-      "name": "Prowling Magus and Congregation"
+      "name": "Prowling Magus and Congregation",
+      "aliases": [
+        "Prowling Magus"
+      ]
     },
     {
       "name": "The Duke's Dear Freja"
@@ -133,6 +167,10 @@
     },
     {
       "name": "Throne Watcher and Throne Defender",
+      "aliases": [
+        "Throne Watcher",
+        "Throne Defender"
+      ],
       "bars": 2
     },
     {
@@ -142,14 +180,22 @@
       "name": "Aldia, Scholar of the First Sin"
     },
     {
-      "name": "Elana, the Squalid Queen"
+      "name": "Elana, the Squalid Queen",
+      "aliases": [
+        "Elana, Squalid Queen"
+      ]
     },
     {
       "name": "Sinh, the Slumbering Dragon"
     },
     {
       "name": "Graverobber, Varg, and Cerah",
-      "bars": 2
+      "aliases": [
+        "Afflicted Graverobber",
+        "Ancient Soldier Varg",
+        "Cerah the Old Explorer"
+      ],
+      "bars": 3
     },
     {
       "name": "Fume Knight"
@@ -165,10 +211,72 @@
     },
     {
       "name": "Lud and Zallen, the King's Pets",
+      "aliases": [
+        "Lud, the King's Pet",
+        "Zallen, the King's Pet"
+      ],
       "bars": 2
     },
     {
       "name": "Burnt Ivory King"
     }
-  ]
+  ],
+  "bar_colors": {
+    "fill": {
+      "h": [
+        [
+          0,
+          8
+        ],
+        [
+          170,
+          180
+        ]
+      ],
+      "s": [
+        100,
+        255
+      ],
+      "v": [
+        20,
+        255
+      ]
+    },
+    "trail": {
+      "h": [
+        [
+          14,
+          26
+        ]
+      ],
+      "s": [
+        120,
+        255
+      ],
+      "v": [
+        70,
+        255
+      ]
+    },
+    "empty": {
+      "h": [
+        [
+          0,
+          180
+        ]
+      ],
+      "s": [
+        0,
+        60
+      ],
+      "v": [
+        25,
+        100
+      ]
+    }
+  },
+  "ocr": {
+    "text_s_max": 30,
+    "prefix_match": true
+  }
 }

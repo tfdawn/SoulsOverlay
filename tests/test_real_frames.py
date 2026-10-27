@@ -198,3 +198,82 @@ def test_dsr_duo_at_hud_scale_one(dsr, width):
         assert [s.pct for s in reading.slots] == [pytest.approx(100, abs=1)] * 2
         assert [s.text for s in reading.slots] == ["Executioner Smough", "Dragon Slayer Ornstein"]
         assert all(s.match.boss == "Ornstein and Smough" for s in reading.slots)
+
+
+# -- Dark Souls II: Scholar of the First Sin, Dragonrider (60 fps 1080p clips)
+# and Ruin Sentinels (1080p screenshot). DSII has no HUD scale setting. -------
+
+@pytest.fixture(scope="module")
+def ds2():
+    return load_profile(ROOT / "profiles", "dark_souls_2")
+
+
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+@pytest.mark.parametrize("name,pct,trail", [
+    ("ds2_dragonrider_full", 100, 0), ("ds2_dragonrider_trail", 96.2, 3.7),
+    ("ds2_dragonrider_low", 16.0, 0)])
+def test_ds2_bar(ds2, width, name, pct, trail):
+    r = read_bar(frame(name, width), ds2.boss_slots[0]["bar"], ds2.data["bar_colors"])
+    assert r.pct == pytest.approx(pct, abs=1.0)
+    assert r.trail_pct == pytest.approx(trail, abs=1.5)
+
+
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+@pytest.mark.parametrize("name", ["ds2_dragonrider_full", "ds2_dragonrider_trail",
+                                  "ds2_dragonrider_low", "ds2_no_boss_floor"])
+def test_ds2_sunlit_floor_is_not_a_bar(ds2, width, name):
+    """Heide's Tower's floor is brown and gold, close enough to a sliver of fill
+    and trail to read as a bar in the empty slots without the empty-bar check."""
+    img = frame(name, width)
+    slots = ds2.boss_slots if name == "ds2_no_boss_floor" else ds2.boss_slots[1:]
+    for slot in slots:
+        assert read_bar(img, slot["bar"], ds2.data["bar_colors"]).pct is None
+
+
+def test_ds2_trail_only_bar_is_the_killing_blow(ds2):
+    """A bar holding only trail, with the empty bar after it, still reads as 0%."""
+    img = cv2.imread(str(FIX / "ds2_dragonrider_low_1080p.jpg"))
+    x0 = 557  # left end of the fill at 1080p
+    img[919:933, x0:x0 + 200] = img[919:933, x0 + 600:x0 + 800]  # empty bar over the 16% fill
+    img[920:932, x0:x0 + 38] = (70, 131, 171)  # measured from a real trail
+    r = read_bar(img, ds2.boss_slots[0]["bar"], ds2.data["bar_colors"])
+    assert r.pct == 0.0 and r.trail_pct == pytest.approx(3.8, abs=1)
+
+
+@needs_tesseract
+@pytest.mark.parametrize("name", ["ds2_dragonrider_full", "ds2_dragonrider_trail", "ds2_dragonrider_low"])
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+def test_ds2_boss_name(ds2, name, width):
+    slot = Analyzer(ds2).analyze(frame(name, width), force_ocr=True).slots[0]
+    assert slot.match is not None and slot.match.boss == "Dragonrider", slot.text
+
+
+def test_ds2_noise_after_the_name_is_not_another_boss(ds2):
+    # Read off the bright floor at 1280 wide; WRatio matched it to Demon of Song.
+    assert ds2.match_boss("Deragcon whi” oF ee ort a") is None
+    assert ds2.match_boss("Dragonrtder -_, . ° a gen").boss == "Dragonrider"
+    assert ds2.match_boss("RuinSentinel Ricce 146").boss == "Ruin Sentinels"
+
+
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+def test_ds2_death(ds2, width):
+    a = Analyzer(ds2)
+    assert a.death.mode == "template"
+    hit, score = a.death.detect(frame("ds2_dragonrider_died", width))
+    assert hit and score > 0.9
+    # 0.4s into the fade-in, the first frame over the threshold
+    hit, score = a.death.detect(frame("ds2_dragonrider_died_fadein", width))
+    assert hit
+    for name in ("ds2_dragonrider_full", "ds2_dragonrider_trail", "ds2_dragonrider_low",
+                 "ds2_no_boss_floor", "ds2_ruin_sentinels"):
+        hit, score = a.death.detect(frame(name, width))
+        assert not hit and score < 0.2, name
+
+
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+def test_ds2_three_bars(ds2, width):
+    """Ruin Sentinels: three bars stacked upwards, Yahim's at the bottom."""
+    img = frame("ds2_ruin_sentinels", width)
+    pcts = [read_bar(img, s["bar"], ds2.data["bar_colors"]).pct for s in ds2.boss_slots]
+    assert pcts == [pytest.approx(51.9, abs=1), pytest.approx(100, abs=1), pytest.approx(100, abs=1)]
+    assert ds2.bar_count("Ruin Sentinels") == 3

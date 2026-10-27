@@ -228,15 +228,20 @@ class Tracker:
         if enc.bars > 1:
             # Duos: phase 1 is the average of both bars; when one partner
             # falls and its bar goes away, phase 2 tracks the survivor.
+            # Groups without phases (Ruin Sentinels) stay one average: a bar
+            # that hasn't shown up yet counts as full, a fallen one as empty.
             enc.max_visible_bars = max(enc.max_visible_bars, len(visible))
-            if enc.max_visible_bars == enc.bars and len(visible) < enc.bars:
+            duo = self.profile.max_phases(enc.boss) is not None
+            if duo and enc.max_visible_bars == enc.bars and len(visible) < enc.bars:
                 enc.refill_count += 1
                 if enc.refill_count >= cfg["confirm_reads"] and enc.phase == 1:
                     enc.phase = 2
                     events.append(("phase", {"boss": enc.boss, "phase": 2}))
             else:
                 enc.refill_count = 0
-            if enc.phase == 1:
+            if not duo:
+                pct = (sum(s.pct for s in visible) + 100.0 * (enc.bars - enc.max_visible_bars)) / enc.bars
+            elif enc.phase == 1:
                 pct = sum(s.pct for s in slots if s.pct is not None) / enc.bars
             else:
                 pct = min(s.pct for s in visible)

@@ -141,7 +141,17 @@ class Profile:
         if len(cleaned) < 3:
             return None
         min_score = self.data["ocr"]["min_score"]
-        if self._choices:
+        if self._choices and self.data["ocr"].get("prefix_match"):
+            # The name sits at the left of its box, so scenery noise only ever
+            # follows it. Score each choice against the best leading run of
+            # words instead of letting WRatio find a partial match anywhere
+            # in the noise, which turned "Deragcon whi oF ee" into
+            # "Demon of Song" over Dark Souls II's bright floors.
+            hit = self._prefix_match(cleaned)
+            if hit and hit[1] >= min_score:
+                canonical, phase = self._choices[hit[0]]
+                return BossMatch(canonical, phase, hit[1], text)
+        elif self._choices:
             hit = process.extractOne(cleaned, list(self._choices), scorer=fuzz.WRatio)
             # OCR often drops the space in a name ("AsylumDemon"), which costs
             # WRatio a lot once a little scenery noise follows it; compare
@@ -159,6 +169,21 @@ class Profile:
         if self.data["tracking"]["accept_unlisted"] and len(cleaned) >= 4:
             return BossMatch(text.strip(), None, 0.0, text)
         return None
+
+    def _prefix_match(self, cleaned: str) -> tuple[str, float] | None:
+        squashed = {k.replace(" ", ""): k for k in self._choices}
+        words = cleaned.split()
+        best: tuple[str, float] | None = None
+        for k in range(1, len(words) + 1):
+            head = " ".join(words[:k])
+            hits = [process.extractOne(head, list(self._choices), scorer=fuzz.ratio),
+                    process.extractOne(head.replace(" ", ""), list(squashed), scorer=fuzz.ratio)]
+            if hits[1]:
+                hits[1] = (squashed[hits[1][0]], hits[1][1])
+            for hit in hits:
+                if hit and (best is None or hit[1] > best[1]):
+                    best = (hit[0], hit[1])
+        return best
 
     # -- persistence -----------------------------------------------------
     def to_json(self) -> dict:
@@ -190,9 +215,9 @@ def load_profile(profiles_dir: Path, game_id: str) -> Profile:
 
 
 # Game pickers list Elden Ring first, then the Dark Souls games in release order.
-# The Dark Souls presets haven't been checked in game yet.
+# The Dark Souls III preset hasn't been checked in game yet.
 ORDER = ("elden_ring", "dark_souls_remastered", "dark_souls_2", "dark_souls_3")
-WIP = {"dark_souls_2", "dark_souls_3"}
+WIP = {"dark_souls_3"}
 
 
 def list_profiles(profiles_dir: Path) -> list[dict]:

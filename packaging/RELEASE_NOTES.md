@@ -1,9 +1,8 @@
-## What's new in 1.0.3
+## What's new in 1.0.4
 
-- **Fixed:** the SoulsOverlay window could freeze ("Not Responding") after being minimized.
-- SoulsOverlay now always opens **stopped**. Click **Start** when you want it to count.
-- **Dark Souls Remastered:** Ornstein and Smough's second health bar is now set up from a real screenshot.
-- Updating from this version on no longer ends with a "Failed to remove temporary directory" warning.
+- **Dark Souls II** is no longer a work in progress. Deaths, boss names and boss health are set up from real Scholar of the First Sin footage, with its own YOU DIED image, boss bar colours and up to three boss bars (Ruin Sentinels, Skeleton Lords and the other group fights).
+- The boss list covers the original game, Scholar of the First Sin and all three DLCs, and recognises each bar's own name in group fights (for example "Ruin Sentinel Yahim").
+- Your Dark Souls II preset updates with the app, unless you've saved your own calibration for it.
 
 ## How to install
 

@@ -45,8 +45,8 @@ deaths and PBs carry over on the first start. If you installed the old version w
 
 ## Calibrate once per game
 
-The Elden Ring and Dark Souls Remastered presets have been calibrated against real
-screenshots and come with a death template, so on a 16:9 screen they should work as they are.
+The Elden Ring, Dark Souls Remastered and Dark Souls II presets have been calibrated against
+real screenshots and come with a death template, so on a 16:9 screen they should work as they are.
 The Dark Souls III preset is a work in progress (marked WiP in the game list) and still uses
 *estimated* regions. Check it, and the others if you play ultrawide, before you rely on it.
 
@@ -189,11 +189,15 @@ Profiles are JSON files in `profiles/`. The boss list is where most of the tunin
 * `phase_names` are names that only appear in a later phase.
 * `phases` tells the tracker that a bar emptying at the end of phase 1 isn't a kill.
 * `bars: 2` averages both bars in phase 1, then tracks the survivor in phase 2.
+* `bars` without `phases` (Dark Souls II's Ruin Sentinels, `bars: 3`) keeps one average for the
+  whole fight: a bar that hasn't appeared yet counts as full, and a fallen one as empty.
 
 For other games, start from `profiles/generic.json`. It has
 `tracking.accept_unlisted = true`, so any stable OCR'd name is used even if it isn't in the
 boss list. Bar and death colours can be tuned under `bar_colors` and `death.heuristic` (OpenCV
-HSV ranges).
+HSV ranges). An optional `bar_colors.empty` colour (the drained part of the bar) stops scenery
+next to an unused boss slot reading as a sliver of bar, and `ocr.prefix_match` matches only the
+start of the name strip, for games whose names sit on bright, busy floors.
 
 ## Events and the chat bot hook
 
@@ -226,8 +230,11 @@ HTTPS requests, so nothing on your PC has to be reachable from the internet.
 ## Known limits
 
 * Elden Ring is checked against real screenshots (full health, a fresh damage trail, about 20%
-  health, and the death screen) at 2560, 1920 and 1280 wide. The Dark Souls presets haven't
-  been checked against real screenshots yet.
+  health, and the death screen) at 2560, 1920 and 1280 wide, and so are Dark Souls Remastered
+  and Dark Souls II. The Dark Souls III preset hasn't been checked against real screenshots yet.
+* In Dark Souls II, both Twin Dragonriders bars are labelled "Dragonrider", and the DLC's blue
+  Smelter Demon is labelled "Smelter Demon", so those fights count as the Dragonrider and the
+  Smelter Demon. Use `boss_set` to keep them apart.
 * The Elden Ring preset has one boss slot. Two-bar fights need a second slot, added on the
   calibration page.
 * OCR depends on Tesseract and a reasonably clean name strip. If a name won't read, use

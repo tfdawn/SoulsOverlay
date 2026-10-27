@@ -32,6 +32,19 @@ def _median_filter_1d(mask: np.ndarray, width: int) -> np.ndarray:
     return windows.sum(axis=1) > (width // 2)
 
 
+def _rest_is_empty(bar: np.ndarray, rest: np.ndarray, colors: dict, threshold: float) -> bool:
+    """The part of a real bar past the fill and trail is the empty bar's
+    colour. Brown or gold scenery (sunlit floors, torches) behind an unused
+    slot can pass for a sliver of fill or trail, but not with an empty bar
+    beside it. Half the rest is enough, so a boss or player standing in front
+    of the bar doesn't hide it. Profiles without an "empty" colour skip this."""
+    spec = colors.get("empty")
+    if spec is None or rest.sum() < max(3, rest.size // 20):
+        return True
+    empty = hsv_mask(bar, spec).mean(axis=0) >= threshold
+    return float(empty[rest].mean()) >= 0.5
+
+
 def read_bar(frame: np.ndarray, region, colors: dict) -> BarReading:
     bar = crop(frame, region)
     if bar is None:
@@ -53,7 +66,7 @@ def read_bar(frame: np.ndarray, region, colors: dict) -> BarReading:
     if red_cols.size == 0:
         # A bar with only trail left is a boss at ~0% (the killing blow);
         # otherwise there is no bar on screen.
-        if trail_share > 2.0 and trail[:anchor].any():
+        if trail_share > 2.0 and trail[:anchor].any() and _rest_is_empty(bar, ~trail, colors, threshold):
             return BarReading(0.0, trail_share, 0.0)
         return BarReading(None, 0.0, 0.0)
     if red_cols[0] >= anchor:
@@ -67,5 +80,9 @@ def read_bar(frame: np.ndarray, region, colors: dict) -> BarReading:
     if not good.any():
         return BarReading(None, trail_share, float(fill.mean()))
     last = int(red_cols[good][-1])
+    rest = ~(fill | trail)
+    rest[: last + 1] = False
+    if not _rest_is_empty(bar, rest, colors, threshold):
+        return BarReading(None, trail_share, float(fill.mean()))
     pct = 100.0 * (last + 1) / width
     return BarReading(round(min(pct, 100.0), 1), round(trail_share, 1), float(fill.mean()))

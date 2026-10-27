@@ -13,7 +13,7 @@ lights up with **NEW PB**.
 
 It watches your game through OBS, so it never touches the game: no mods, no memory reading.
 
-Works with **Elden Ring** and **Dark Souls Remastered** out of the box.
+Works with **Elden Ring**, **Dark Souls Remastered** and **Dark Souls II** (including Scholar of the First Sin and the DLCs) out of the box.
 
 ## Get started
 

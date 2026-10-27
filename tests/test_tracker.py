@@ -1,3 +1,5 @@
+import pytest
+
 from dataclasses import replace
 
 from soulsoverlay.detect.analyzer import FrameReading, SlotReading
@@ -209,3 +211,28 @@ def test_bar_left_up_after_the_banner_is_not_a_new_fight(er):
     assert len(kinds(ev, "death")) == 1
     assert [e["boss"] for e in kinds(ev, "engage")] == [boss, boss]
     assert tr.encounter and tr.encounter.started == 11
+
+
+def test_group_without_phases_averages_with_late_and_fallen_bars():
+    """Ruin Sentinels: Yahim fights alone at first, the other two drop in later,
+    and a fallen sentinel's bar goes away. Bars yet to appear count as full,
+    fallen ones as empty, so the reading only ever goes down."""
+    from pathlib import Path
+    from soulsoverlay.profiles import load_profile
+
+    ds2 = load_profile(Path(__file__).resolve().parents[1] / "profiles", "dark_souls_2")
+    tr = Tracker(ds2)
+
+    def at(t, *pcts):
+        names = ["Ruin Sentinel Yahim", "Ruin Sentinel Ricce", "Ruin Sentinel Alessia"]
+        s = [slot(ds2, names[i], p) for i, p in enumerate(pcts)]
+        return FrameReading(t, False, 0.0, False, 0.0, s + [SlotReading(None, 0, "", None)] * (3 - len(s)))
+
+    ev = run(tr, [at(0, 100), at(0.5, 100), at(1.0, 40), at(1.5, 40), at(2.0, 40)])
+    assert kinds(ev, "engage")[0]["boss"] == "Ruin Sentinels"
+    assert kinds(ev, "live")[-1]["pct"] == 80.0
+    ev = run(tr, [at(t, 40, 100, 100) for t in (2.5, 3.0, 3.5)])
+    assert kinds(ev, "live")[-1]["pct"] == 80.0
+    ev = run(tr, [at(t, 100, 100) for t in (4.0, 4.5, 5.0)])  # Yahim falls
+    assert kinds(ev, "live")[-1]["pct"] == pytest.approx(66.7, abs=0.1)
+    assert not kinds(ev, "phase")
