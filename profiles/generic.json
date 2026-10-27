@@ -1,0 +1,16 @@
+{
+  "id": "generic",
+  "name": "Generic (calibrate me)",
+  "notes": "Blank profile for other games: calibrate regions and colours, and either add bosses or keep accept_unlisted on.",
+  "regions": {},
+  "boss_slots": [
+    {
+      "name": null,
+      "bar": null
+    }
+  ],
+  "tracking": {
+    "accept_unlisted": true
+  },
+  "bosses": []
+}

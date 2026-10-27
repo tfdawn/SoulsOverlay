@@ -1,0 +1,174 @@
+{
+  "id": "dark_souls_2",
+  "name": "Dark Souls II",
+  "notes": "Regions are first estimates for a 16:9 frame (copied from Dark Souls Remastered) and need checking with the calibration page against real screenshots. Covers Scholar of the First Sin and the DLCs.",
+  "regions": {
+    "death": [
+      0.25,
+      0.42,
+      0.5,
+      0.16
+    ]
+  },
+  "boss_slots": [
+    {
+      "name": [
+        0.18,
+        0.842,
+        0.36,
+        0.032
+      ],
+      "bar": [
+        0.185,
+        0.878,
+        0.63,
+        0.012
+      ]
+    },
+    {
+      "name": [
+        0.18,
+        0.792,
+        0.36,
+        0.032
+      ],
+      "bar": [
+        0.185,
+        0.828,
+        0.63,
+        0.012
+      ]
+    }
+  ],
+  "bosses": [
+    {
+      "name": "The Last Giant"
+    },
+    {
+      "name": "The Pursuer"
+    },
+    {
+      "name": "Dragonrider"
+    },
+    {
+      "name": "Old Dragonslayer"
+    },
+    {
+      "name": "Flexile Sentry"
+    },
+    {
+      "name": "Ruin Sentinels",
+      "bars": 2
+    },
+    {
+      "name": "Belfry Gargoyles"
+    },
+    {
+      "name": "Lost Sinner"
+    },
+    {
+      "name": "Executioner's Chariot"
+    },
+    {
+      "name": "Skeleton Lords",
+      "bars": 2
+    },
+    {
+      "name": "Covetous Demon"
+    },
+    {
+      "name": "Mytha, the Baneful Queen"
+    },
+    {
+      "name": "Smelter Demon"
+    },
+    {
+      "name": "Old Iron King"
+    },
+    {
+      "name": "Scorpioness Najka"
+    },
+    {
+      "name": "Royal Rat Authority"
+    },
+    {
+      "name": "Prowling Magus and Congregation"
+    },
+    {
+      "name": "The Duke's Dear Freja"
+    },
+    {
+      "name": "Royal Rat Vanguard"
+    },
+    {
+      "name": "The Rotten"
+    },
+    {
+      "name": "Looking Glass Knight"
+    },
+    {
+      "name": "Demon of Song"
+    },
+    {
+      "name": "Velstadt, the Royal Aegis"
+    },
+    {
+      "name": "Vendrick"
+    },
+    {
+      "name": "Guardian Dragon"
+    },
+    {
+      "name": "Ancient Dragon"
+    },
+    {
+      "name": "Giant Lord"
+    },
+    {
+      "name": "Twin Dragonriders",
+      "bars": 2
+    },
+    {
+      "name": "Darklurker"
+    },
+    {
+      "name": "Throne Watcher and Throne Defender",
+      "bars": 2
+    },
+    {
+      "name": "Nashandra"
+    },
+    {
+      "name": "Aldia, Scholar of the First Sin"
+    },
+    {
+      "name": "Elana, the Squalid Queen"
+    },
+    {
+      "name": "Sinh, the Slumbering Dragon"
+    },
+    {
+      "name": "Graverobber, Varg, and Cerah",
+      "bars": 2
+    },
+    {
+      "name": "Fume Knight"
+    },
+    {
+      "name": "Sir Alonne"
+    },
+    {
+      "name": "Blue Smelter Demon"
+    },
+    {
+      "name": "Aava, the King's Pet"
+    },
+    {
+      "name": "Lud and Zallen, the King's Pets",
+      "bars": 2
+    },
+    {
+      "name": "Burnt Ivory King"
+    }
+  ]
+}

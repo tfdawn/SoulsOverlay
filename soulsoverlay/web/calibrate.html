@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SoulsOverlay Calibration</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/calibrate/calibrate.css">
+</head>
+<body>
+  <header>
+    <h1>Calibration</h1>
+    <label>Game <select id="game"></select></label>
+    <button id="grab">Grab frame from OBS</button>
+    <label class="file">Load screenshot<input type="file" id="file" accept="image/*"></label>
+    <button id="test">Test detection</button>
+    <button id="save" class="primary">Save profile</button>
+    <button id="resume">Resume live capture</button>
+    <span id="msg" role="status"></span>
+  </header>
+  <main>
+    <section class="stage">
+      <canvas id="canvas" width="1280" height="720"></canvas>
+      <p class="hint">Pick a region on the right, then drag a box on the frame. The bar box should
+        cover only the inside of the boss bar (no frame or ornaments). Add a second boss slot only
+        for duo fights that show two bars.</p>
+    </section>
+    <aside>
+      <h2>Regions</h2>
+      <ul id="regions"></ul>
+      <button id="add-slot">Add boss slot</button>
+      <button id="remove-slot">Remove last slot</button>
+      <h2>Zoom</h2>
+      <canvas id="zoom" width="320" height="120"></canvas>
+      <h2>Death template</h2>
+      <p class="small">Load a screenshot with the death text fully visible, set the Death region,
+        save, then capture. Until then a colour heuristic is used.</p>
+      <button id="tpl-death">Capture death template</button>
+      <button id="tpl-victory">Capture victory template</button>
+      <h2>Detection</h2>
+      <pre id="diag">Run "Test detection" on a frame.</pre>
+    </aside>
+  </main>
+  <script src="/calibrate/calibrate.js"></script>
+</body>
+</html>

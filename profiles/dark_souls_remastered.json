@@ -1,0 +1,131 @@
+{
+  "id": "dark_souls_remastered",
+  "name": "Dark Souls Remastered",
+  "notes": "Regions are first estimates for a 16:9 frame and need checking with the calibration page against real screenshots.",
+  "regions": {
+    "death": [
+      0.25,
+      0.42,
+      0.5,
+      0.16
+    ]
+  },
+  "boss_slots": [
+    {
+      "name": [
+        0.18,
+        0.842,
+        0.36,
+        0.032
+      ],
+      "bar": [
+        0.185,
+        0.878,
+        0.63,
+        0.012
+      ]
+    },
+    {
+      "name": [
+        0.18,
+        0.792,
+        0.36,
+        0.032
+      ],
+      "bar": [
+        0.185,
+        0.828,
+        0.63,
+        0.012
+      ]
+    }
+  ],
+  "bosses": [
+    {
+      "name": "Asylum Demon"
+    },
+    {
+      "name": "Taurus Demon"
+    },
+    {
+      "name": "Bell Gargoyle",
+      "bars": 2,
+      "phases": 2
+    },
+    {
+      "name": "Capra Demon"
+    },
+    {
+      "name": "Gaping Dragon"
+    },
+    {
+      "name": "Moonlight Butterfly"
+    },
+    {
+      "name": "Chaos Witch Quelaag"
+    },
+    {
+      "name": "Stray Demon"
+    },
+    {
+      "name": "Iron Golem"
+    },
+    {
+      "name": "Ornstein and Smough",
+      "aliases": [
+        "Dragon Slayer Ornstein",
+        "Executioner Smough"
+      ],
+      "bars": 2,
+      "phases": 2
+    },
+    {
+      "name": "Great Grey Wolf Sif"
+    },
+    {
+      "name": "Pinwheel"
+    },
+    {
+      "name": "Gravelord Nito"
+    },
+    {
+      "name": "Seath the Scaleless"
+    },
+    {
+      "name": "Four Kings"
+    },
+    {
+      "name": "Crossbreed Priscilla"
+    },
+    {
+      "name": "Dark Sun Gwyndolin"
+    },
+    {
+      "name": "Ceaseless Discharge"
+    },
+    {
+      "name": "Demon Firesage"
+    },
+    {
+      "name": "Centipede Demon"
+    },
+    {
+      "name": "Bed of Chaos"
+    },
+    {
+      "name": "Gwyn, Lord of Cinder"
+    },
+    {
+      "name": "Sanctuary Guardian"
+    },
+    {
+      "name": "Knight Artorias"
+    },
+    {
+      "name": "Black Dragon Kalameet"
+    },
+    {
+      "name": "Manus, Father of the Abyss"
+    }
+  ]
+}

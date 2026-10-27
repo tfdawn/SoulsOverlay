@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "soulsoverlay"
+version = "1.0.0"
+description = "Automatic death counter and boss PB overlay for OBS, driven by screen detection"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy>=1.26",
+    "opencv-python-headless>=4.9",
+    "rapidfuzz>=3.6",
+    "aiohttp>=3.9",
+    "obsws-python>=1.7",
+    "pytesseract>=0.3.12",
+]
+
+[project.optional-dependencies]
+hotkeys = ["pynput>=1.7"]
+launcher = ["pywebview>=5", "pystray>=0.19", "pillow>=10"]
+dev = ["pytest>=8"]
+
+[project.scripts]
+soulsoverlay = "soulsoverlay.__main__:main"
+
+[tool.setuptools]
+packages = ["soulsoverlay", "soulsoverlay.detect"]
+
+[tool.setuptools.package-data]
+soulsoverlay = ["web/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

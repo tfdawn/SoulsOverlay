@@ -1,0 +1,270 @@
+"""Turns a stream of FrameReadings into game events.
+
+The tracker is pure logic with an injected clock, so it can be driven by
+recorded readings in tests. It never writes to the database itself; it
+returns events and the service applies them.
+
+Event types it emits:
+    engage      {boss, phase}
+    phase       {boss, phase}
+    live        {boss, phase, pct}           smoothed health, for the overlay
+    death       {boss|None, phase, pct}      pct is health just before death
+    kill        {boss, phase}
+    disengage   {boss}
+"""
+
+from __future__ import annotations
+
+import statistics
+from collections import deque
+from dataclasses import dataclass, field
+
+from .detect.analyzer import FrameReading
+from .profiles import Profile
+
+
+@dataclass
+class Encounter:
+    boss: str
+    phase: int = 1
+    bars: int = 1
+    started: float = 0.0
+    last_seen: float = 0.0
+    readings: deque = field(default_factory=lambda: deque(maxlen=120))  # (t, phase, pct)
+    max_visible_bars: int = 0
+    refill_count: int = 0
+
+    def recent(self, n: int = 3) -> float | None:
+        vals = [p for _, ph, p in list(self.readings)[-n:] if ph == self.phase]
+        return statistics.median(vals) if vals else None
+
+
+class Tracker:
+    def __init__(self, profile: Profile):
+        self.profile = profile
+        self.encounter: Encounter | None = None
+        self.last_boss: str | None = None  # stays on the overlay after a fight
+        self.pinned_boss: str | None = None  # manual override
+        self._candidate: tuple[str, int] | None = None  # (boss, consecutive reads)
+        self._death_streak = 0
+        self._death_latched = False
+        self._last_death_t = -1e9
+        self._victory_streak = 0
+        self.bar_up = False  # the boss bar is on screen right now
+        self.bar_boss: str | None = None  # whose bar that is
+        self._bar_misses = 0
+        self._bar_miss_t = -1e9  # when the bar first went missing
+
+    @property
+    def cfg(self) -> dict:
+        return self.profile.data["tracking"]
+
+    @property
+    def display_boss(self) -> str | None:
+        if self.encounter:
+            return self.encounter.boss
+        return self.pinned_boss or self.last_boss
+
+    # -- manual controls -------------------------------------------------
+    def pin_boss(self, boss: str | None):
+        self.pinned_boss = boss
+        if boss:
+            self.last_boss = boss
+
+    def manual_death_context(self, now: float) -> tuple[str | None, int, float | None]:
+        """Boss/phase/pct to attach to a death added by hotkey."""
+        enc = self.encounter
+        if enc and now - enc.last_seen <= self.cfg["attribution_window_s"]:
+            return enc.boss, enc.phase, self._pre_death_pct(enc, now)
+        boss = self.pinned_boss or self.last_boss
+        return boss, 1, None
+
+    # -- main loop -------------------------------------------------------
+    def update(self, r: FrameReading) -> list[tuple[str, dict]]:
+        events: list[tuple[str, dict]] = []
+        cfg = self.cfg
+        now = r.t
+
+        # 1. who is on screen?
+        matched = [s for s in r.slots if s.match is not None]
+        boss_now = None
+        if matched:
+            boss_now = matched[0].match.boss
+            if self._candidate and self._candidate[0] == boss_now:
+                self._candidate = (boss_now, self._candidate[1] + 1)
+            else:
+                self._candidate = (boss_now, 1)
+        sure = bool(matched) and matched[0].match.score >= cfg["instant_score"]
+        # The bar can stay up under "YOU DIED"; that is the fight that just
+        # ended, not a new one.
+        dying = r.death or self._death_latched
+        if (boss_now and not dying and (sure or self._candidate[1] >= cfg["confirm_reads"])
+                and (self.encounter is None or self.encounter.boss != boss_now)):
+            if self.encounter:
+                events.append(("disengage", {"boss": self.encounter.boss}))
+            bars = min(self.profile.bar_count(boss_now), max(1, len(self.profile.boss_slots)))
+            self.encounter = Encounter(boss_now, bars=bars,
+                                       started=now, last_seen=now)
+            self.last_boss = boss_now
+            events.append(("engage", {"boss": boss_now, "phase": 1}))
+
+        enc = self.encounter
+        if enc is not None:
+            self._update_health(enc, r, now, events)
+        self._update_bar_up(enc, r, now, events)
+
+        # 2. death banner
+        dcfg = self.profile.data["death"]
+        if r.death and not self._death_latched:
+            self._death_streak += 1
+        elif not r.death:
+            self._death_streak = 0
+            self._death_latched = False
+        # The fight's bar has just vanished and the banner is starting to show.
+        quick = (self.encounter is not None and self._bar_misses >= 1 and not self._death_latched
+                 and now - self._bar_miss_t <= dcfg["bar_window_s"]
+                 and r.death_score >= dcfg["with_bar_score"])
+        if self._death_streak >= dcfg["confirm_frames"] or (
+                self._death_streak and r.death_sure) or quick:
+            # One banner is one death, however long it stays up. A second
+            # banner inside the cooldown is treated as the same death.
+            self._death_latched = True
+            self._death_streak = 0
+            fire = now - self._last_death_t >= self.profile.data["death"]["cooldown_s"]
+        else:
+            fire = False
+        if fire:
+            self._last_death_t = now
+            events.append(("death", self._death_payload(now)))
+            if self.encounter:
+                self.encounter = None
+            return events
+
+        # 3. victory banner, or the bar draining and vanishing
+        if enc is not None:
+            if r.victory:
+                self._victory_streak += 1
+            else:
+                self._victory_streak = 0
+            if self._victory_streak >= 2:
+                events.append(("kill", {"boss": enc.boss, "phase": enc.phase}))
+                self.encounter = None
+                self._victory_streak = 0
+            elif now - enc.last_seen >= cfg["disengage_s"]:
+                last = enc.recent(3)
+                max_ph = self.profile.max_phases(enc.boss)
+                final_phase = max_ph is None or enc.phase >= max_ph
+                if (last is not None and last <= cfg["kill_threshold_pct"] and final_phase
+                        and self.profile.data.get("victory") is None):
+                    events.append(("kill", {"boss": enc.boss, "phase": enc.phase}))
+                    self.encounter = None
+                elif last is not None and last <= cfg["kill_threshold_pct"] and not final_phase:
+                    # Mid-fight transition (e.g. a cutscene between phases):
+                    # keep waiting a while longer for the next bar.
+                    if now - enc.last_seen >= 4 * cfg["disengage_s"]:
+                        events.append(("disengage", {"boss": enc.boss}))
+                        self.encounter = None
+                else:
+                    events.append(("disengage", {"boss": enc.boss}))
+                    self.encounter = None
+        return events
+
+    # -- helpers ---------------------------------------------------------
+    def _update_bar_up(self, enc: Encounter | None, r: FrameReading, now: float, events):
+        """Follow the game's bar closely so the HUD can come and go with it.
+        After a death the bar may linger under "YOU DIED" or vanish at once;
+        either way the HUD stays exactly as long as the bar. A couple of
+        missed frames (not one, which can be a bad read) hides it."""
+        if enc is not None:
+            seen = enc.last_seen == now
+            self.bar_boss = enc.boss
+        else:
+            # No fight, so only the bar of the boss that just killed us counts.
+            seen = self.bar_boss is not None and self.bar_up and any(
+                s.pct is not None for s in r.slots[:1])
+        if seen:
+            self._bar_misses = 0
+            self._set_bar_up(True, events)
+        else:
+            self._bar_misses += 1
+            if self._bar_misses == 1:
+                self._bar_miss_t = now
+            # One missed frame could be a bad read, unless the banner is coming in.
+            if (self._bar_misses >= self.cfg["bar_hide_frames"]
+                    or r.death_score >= self.profile.data["death"]["with_bar_score"]):
+                self._set_bar_up(False, events)
+
+    def _set_bar_up(self, up: bool, events):
+        if not up and self.encounter is None:
+            self.bar_boss = None
+        if up != self.bar_up:
+            self.bar_up = up
+            events.append(("bar", {"up": up}))
+
+    def _update_health(self, enc: Encounter, r: FrameReading, now: float, events):
+        cfg = self.cfg
+        slots = r.slots[: max(enc.bars, 1)]
+        visible = [s for s in slots if s.pct is not None]
+        if not visible:
+            return
+        # Only trust bars when the name strip belongs to this encounter (or
+        # could not be read this frame, which happens on busy backgrounds).
+        if any(s.match and s.match.boss != enc.boss for s in visible):
+            return
+        enc.last_seen = now
+        for s in visible:
+            if s.match and s.match.phase_hint and s.match.phase_hint > enc.phase:
+                enc.phase = s.match.phase_hint
+                events.append(("phase", {"boss": enc.boss, "phase": enc.phase}))
+
+        if enc.bars > 1:
+            # Duos: phase 1 is the average of both bars; when one partner
+            # falls and its bar goes away, phase 2 tracks the survivor.
+            enc.max_visible_bars = max(enc.max_visible_bars, len(visible))
+            if enc.max_visible_bars == enc.bars and len(visible) < enc.bars:
+                enc.refill_count += 1
+                if enc.refill_count >= cfg["confirm_reads"] and enc.phase == 1:
+                    enc.phase = 2
+                    events.append(("phase", {"boss": enc.boss, "phase": 2}))
+            else:
+                enc.refill_count = 0
+            if enc.phase == 1:
+                pct = sum(s.pct for s in slots if s.pct is not None) / enc.bars
+            else:
+                pct = min(s.pct for s in visible)
+        else:
+            pct = visible[0].pct
+            prev = enc.recent(3)
+            max_ph = self.profile.max_phases(enc.boss)
+            can_advance = max_ph is None or enc.phase < max_ph
+            if prev is not None and prev <= cfg["phase_low_pct"] and pct >= cfg["phase_refill_pct"]:
+                enc.refill_count += 1
+                if enc.refill_count >= cfg["confirm_reads"] and can_advance:
+                    enc.phase += 1
+                    enc.refill_count = 0
+                    events.append(("phase", {"boss": enc.boss, "phase": enc.phase}))
+                else:
+                    return  # don't let one odd frame pollute the buffer
+            else:
+                enc.refill_count = 0
+
+        enc.readings.append((now, enc.phase, round(pct, 1)))
+        events.append(("live", {"boss": enc.boss, "phase": enc.phase, "pct": enc.recent(3)}))
+
+    def _pre_death_pct(self, enc: Encounter, now: float) -> float | None:
+        window = self.cfg["pre_death_window_s"]
+        same_phase = [(t, p) for t, ph, p in enc.readings if ph == enc.phase]
+        if not same_phase:
+            return None
+        recent = [p for t, p in same_phase if now - t <= window + 2.0]
+        vals = recent[-3:] if recent else [same_phase[-1][1]]
+        return round(statistics.median(vals), 1)
+
+    def _death_payload(self, now: float) -> dict:
+        enc = self.encounter
+        if enc and now - enc.last_seen <= self.cfg["attribution_window_s"]:
+            return {"boss": enc.boss, "phase": enc.phase, "pct": self._pre_death_pct(enc, now),
+                    "source": "auto"}
+        if self.pinned_boss:
+            return {"boss": self.pinned_boss, "phase": 1, "pct": None, "source": "auto"}
+        return {"boss": None, "phase": 1, "pct": None, "source": "auto"}

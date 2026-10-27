@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SoulsOverlay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/launcher/launcher.css">
+</head>
+<body>
+  <main>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <div class="name">SoulsOverlay</div>
+        <div class="sub"><span id="version"></span> · <select id="game" aria-label="Game"></select></div>
+      </div>
+    </div>
+
+    <div class="card char" id="char-card" hidden>
+      <span class="char-label">Character</span>
+      <select id="character" aria-label="Character"></select>
+      <span class="char-links">
+        <a href="#" id="char-new">New</a>
+        <a href="#" id="char-rename">Rename</a>
+        <a href="#" id="char-delete">Delete</a>
+      </span>
+    </div>
+
+    <div class="card update" id="update" hidden>
+      <div class="update-text">
+        <div class="title" id="update-title"></div>
+        <div class="detail" id="update-detail"></div>
+        <div class="bar" id="update-bar" hidden><div id="update-fill"></div></div>
+      </div>
+      <div class="update-actions" id="update-actions"></div>
+    </div>
+
+    <div class="card status" id="status-card">
+      <span class="dot" id="dot"></span>
+      <div>
+        <div class="title" id="status-title">Starting…</div>
+        <div class="detail" id="status-detail"></div>
+      </div>
+    </div>
+
+    <div class="card boss" id="boss" hidden>
+      <span>Boss <b id="boss-name"></b></span>
+      <span>Deaths <b id="boss-deaths"></b> · PB <b id="boss-pb"></b></span>
+    </div>
+
+    <form class="card connect" id="connect" hidden>
+      <div class="title">Connect to OBS</div>
+      <ol class="steps">
+        <li>In OBS, open <b>Tools ▸ WebSocket Server Settings</b> and tick <b>Enable WebSocket server</b>.</li>
+        <li>Click <b>Show Connect Info</b> and copy the <b>Server Password</b>.</li>
+      </ol>
+      <label>OBS WebSocket password
+        <input type="password" id="password" autocomplete="off" spellcheck="false"></label>
+      <label>Game capture source name in OBS
+        <input type="text" id="source" autocomplete="off" spellcheck="false" placeholder="Game Capture"></label>
+      <div class="row">
+        <button type="submit" class="primary" id="connect-save">Save and connect</button>
+        <button type="button" id="connect-cancel">Cancel</button>
+        <span class="msg" id="connect-msg" role="status"></span>
+      </div>
+    </form>
+
+    <div class="buttons">
+      <button id="startstop" class="primary">▶&nbsp; Start</button>
+      <button id="open-settings" title="Overlay look and hotkeys">Settings</button>
+      <button id="open-calibrate" title="Mark where the game draws its boss bar">Calibrate</button>
+    </div>
+
+    <div class="label">OBS Browser source URL</div>
+    <div class="url">
+      <input type="text" id="hud-url" readonly aria-label="OBS Browser source URL">
+      <button id="copy" class="copy">Copy</button>
+    </div>
+    <div class="hint">In OBS: Sources ▸ + ▸ Browser, paste this, and set the size to your canvas size. Then right-click it ▸ Transform ▸ Fit to screen.</div>
+  </main>
+  <footer>
+    <span class="links">
+      <a href="#" id="check-updates">Check for updates</a>
+      <a href="#" id="edit-obs">OBS connection</a>
+      <a href="#" id="open-data" class="native" hidden>Open data folder</a>
+    </span>
+  </footer>
+  <div class="modal" id="wip" hidden role="dialog" aria-modal="true" aria-labelledby="wip-title">
+    <div class="modal-box">
+      <div class="modal-icon" aria-hidden="true">!</div>
+      <div class="title" id="wip-title"></div>
+      <p>This game's preset is a work in progress and hasn't been tested in game yet. The positions of
+        the boss health bar and "YOU DIED" are estimates, so deaths and PBs may not be counted correctly.</p>
+      <p>For the best results, click <b>Calibrate</b> after switching and mark where the game draws them.</p>
+      <div class="modal-actions">
+        <button id="wip-keep"></button>
+        <button id="wip-switch" class="primary">Switch anyway</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="st-title">
+    <div class="modal-box">
+      <div class="title" id="st-title">Settings</div>
+      <button class="choice" id="st-look">
+        <span class="choice-name">Overlay Editor <span class="ext" aria-label="opens in your browser">↗</span></span>
+        <span class="choice-text">Change how the overlay looks: colours, text and the NEW PB effect.</span>
+      </button>
+      <button class="choice" id="open-hotkeys">
+        <span class="choice-name">Hotkeys</span>
+        <span class="choice-text">Change your key bindings for hotkeys, or turn them off.</span>
+      </button>
+      <label class="choice toggle native" hidden>
+        <span class="choice-name"><input type="checkbox" id="st-tray"> Keep running in the tray</span>
+        <span class="choice-text">Closing the window hides it to the tray, so SoulsOverlay keeps counting. Untick this to quit when you close the window instead.</span>
+      </label>
+      <div class="modal-actions">
+        <button id="st-close">Close</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="traynote" hidden role="dialog" aria-modal="true" aria-labelledby="tn-title">
+    <div class="modal-box">
+      <div class="title" id="tn-title">SoulsOverlay is still running</div>
+      <p>It keeps counting from the tray, by the clock in the corner of the taskbar. Click its icon there
+        to open this window again, or right-click it and choose <b>Quit</b> to stop it.</p>
+      <p>Rather have it quit when you close the window? Turn off <b>Keep running in the tray</b> in Settings.</p>
+      <label class="hk-on"><input type="checkbox" id="tn-off"> Don't show this again</label>
+      <div class="modal-actions">
+        <button id="tn-settings" class="left">Open Settings</button>
+        <button id="tn-ok" class="primary">OK</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="editor" hidden role="dialog" aria-modal="true" aria-labelledby="ed-title">
+    <div class="modal-box">
+      <div class="title" id="ed-title">Open the Overlay Editor?</div>
+      <p>It opens in your web browser, where you can change the overlay's colours, text and the
+        <b>NEW PB</b> effect, and see them on a live preview of the boss bar.</p>
+      <p>Nothing changes on stream until you click <b>Save</b> there. Then OBS picks it up straight away.
+        <b>Undo changes</b> and <b>Reset all</b> take you back if you don't like it.</p>
+      <div class="modal-actions">
+        <button id="ed-cancel">Cancel</button>
+        <button id="ed-open" class="primary">Open in browser</button>
+      </div>
+    </div>
+  </div>
+  <form class="modal" id="charname" hidden role="dialog" aria-modal="true" aria-labelledby="cn-title">
+    <div class="modal-box">
+      <div class="title" id="cn-title"></div>
+      <p id="cn-text"></p>
+      <input type="text" id="cn-name" maxlength="40" autocomplete="off" spellcheck="false" placeholder="e.g. Strength build">
+      <div class="msg" id="cn-msg" role="status"></div>
+      <div class="modal-actions">
+        <button type="button" id="cn-cancel">Cancel</button>
+        <button type="submit" id="cn-ok" class="primary"></button>
+      </div>
+    </div>
+  </form>
+  <div class="modal" id="chardel" hidden role="dialog" aria-modal="true" aria-labelledby="cd-title">
+    <div class="modal-box">
+      <div class="modal-icon" aria-hidden="true">!</div>
+      <div class="title" id="cd-title"></div>
+      <p>Its deaths and PBs stop showing in SoulsOverlay. Your other characters aren't affected.</p>
+      <div class="modal-actions">
+        <button id="cd-cancel">Cancel</button>
+        <button id="cd-ok" class="stop">Delete</button>
+      </div>
+    </div>
+  </div>
+  <div class="modal" id="hotkeys" hidden role="dialog" aria-modal="true" aria-labelledby="hk-title">
+    <div class="modal-box wide">
+      <div class="title" id="hk-title">Hotkeys</div>
+      <p class="muted">They work while you play, even with the game in front. Untick any you don't want, so you can't press them by accident. To change one, click its keys and press the new ones.</p>
+      <label class="check hk-on"><input type="checkbox" id="hk-enabled"> Hotkeys on</label>
+      <div id="hk-rows"></div>
+      <div class="hk-tip" id="hk-tip" aria-live="polite"></div>
+      <div class="msg" id="hk-msg" role="status"></div>
+      <div class="modal-actions">
+        <button id="hk-defaults" class="left">Defaults</button>
+        <button id="hk-cancel">Cancel</button>
+        <button id="hk-save" class="primary">Save</button>
+      </div>
+    </div>
+  </div>
+  <script src="/launcher/launcher.js"></script>
+</body>
+</html>

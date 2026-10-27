@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SoulsOverlay HUD</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/overlay/hud.css">
+  <link rel="stylesheet" href="/overlay/custom.css">
+</head>
+<body>
+  <!-- Positioned over the game's own boss bar; see hud.js. -->
+  <div id="hud" class="hud">
+    <div class="bar" id="bar">
+      <div class="pb-mark" id="pb-mark"></div>
+      <div class="shine" id="shine"></div>
+    </div>
+    <div class="under" id="under">
+      <span class="stat deaths"><span class="label" data-label="hud.label_deaths">Deaths</span> <span class="value" id="deaths">0</span></span>
+      <span class="stat phase" id="phase"></span>
+      <span class="stat pb"><span class="label" data-label="hud.label_pb">PB</span> <span class="value" id="pb">–</span></span>
+    </div>
+    <div class="callout" id="callout"><span id="callout-title"></span> <span class="sub" id="callout-sub"></span></div>
+  </div>
+  <script src="/overlay/style.js"></script>
+  <script src="/overlay/fx.js"></script>
+  <script src="/overlay/hud.js"></script>
+</body>
+</html>

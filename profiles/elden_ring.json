@@ -1,0 +1,289 @@
+{
+  "id": "elden_ring",
+  "name": "Elden Ring",
+  "notes": "Calibrated from 2560x1440 screenshots: Morgott (full health, damage trail, death screen) and Tree Sentinel (about 20%). Stored as fractions, so other 16:9 resolutions work. Ultrawide needs recalibrating. YOU DIED threshold 0.4 from a 60 fps Tree Sentinel clip: ordinary frames score up to 0.14, the banner passes 0.4 about 0.15s into its fade-in, about 0.8s before the boss bar goes.",
+  "regions": {
+    "death": [
+      0.3516,
+      0.4444,
+      0.2969,
+      0.125
+    ]
+  },
+  "boss_slots": [
+    {
+      "name": [
+        0.2383,
+        0.7722,
+        0.33,
+        0.0257
+      ],
+      "bar": [
+        0.2422,
+        0.8035,
+        0.5184,
+        0.0076
+      ]
+    }
+  ],
+  "death": {
+    "heuristic": {
+      "h": [
+        [
+          0,
+          5
+        ],
+        [
+          165,
+          180
+        ]
+      ],
+      "s": [
+        150,
+        255
+      ],
+      "v": [
+        70,
+        255
+      ],
+      "min_fraction": 0.02,
+      "max_fraction": 0.3,
+      "max_mean_v": 110
+    },
+    "template": "templates/elden_ring_death.png",
+    "threshold": 0.4
+  },
+  "bar_colors": {
+    "fill": {
+      "h": [
+        [
+          0,
+          10
+        ],
+        [
+          165,
+          180
+        ]
+      ],
+      "s": [
+        90,
+        255
+      ],
+      "v": [
+        40,
+        255
+      ]
+    },
+    "trail": {
+      "h": [
+        [
+          12,
+          40
+        ]
+      ],
+      "s": [
+        120,
+        255
+      ],
+      "v": [
+        110,
+        255
+      ]
+    }
+  },
+  "bosses": [
+    {
+      "name": "Margit, the Fell Omen",
+      "aliases": [
+        "Margit"
+      ]
+    },
+    {
+      "name": "Godrick the Grafted"
+    },
+    {
+      "name": "Red Wolf of Radagon"
+    },
+    {
+      "name": "Rennala, Queen of the Full Moon",
+      "phases": 2
+    },
+    {
+      "name": "Royal Knight Loretta"
+    },
+    {
+      "name": "Starscourge Radahn"
+    },
+    {
+      "name": "Rykard, Lord of Blasphemy",
+      "aliases": [
+        "God-Devouring Serpent"
+      ]
+    },
+    {
+      "name": "Morgott, the Omen King"
+    },
+    {
+      "name": "Fire Giant"
+    },
+    {
+      "name": "Godskin Duo"
+    },
+    {
+      "name": "Maliketh, the Black Blade",
+      "aliases": [
+        "Beast Clergyman"
+      ]
+    },
+    {
+      "name": "Sir Gideon Ofnir, the All-Knowing"
+    },
+    {
+      "name": "Godfrey, First Elden Lord",
+      "phase_names": {
+        "Hoarah Loux, Warrior": 2
+      },
+      "phases": 2
+    },
+    {
+      "name": "Radagon of the Golden Order",
+      "phase_names": {
+        "Elden Beast": 2
+      },
+      "phases": 2
+    },
+    {
+      "name": "Malenia, Blade of Miquella",
+      "phase_names": {
+        "Malenia, Goddess of Rot": 2
+      },
+      "phases": 2
+    },
+    {
+      "name": "Mohg, Lord of Blood"
+    },
+    {
+      "name": "Mohg, the Omen"
+    },
+    {
+      "name": "Lichdragon Fortissax"
+    },
+    {
+      "name": "Astel, Naturalborn of the Void"
+    },
+    {
+      "name": "Dragonlord Placidusax"
+    },
+    {
+      "name": "Regal Ancestor Spirit"
+    },
+    {
+      "name": "Commander Niall"
+    },
+    {
+      "name": "Loretta, Knight of the Haligtree"
+    },
+    {
+      "name": "Valiant Gargoyle",
+      "bars": 2,
+      "phases": 2
+    },
+    {
+      "name": "Leonine Misbegotten"
+    },
+    {
+      "name": "Grafted Scion"
+    },
+    {
+      "name": "Tree Sentinel"
+    },
+    {
+      "name": "Draconic Tree Sentinel"
+    },
+    {
+      "name": "Night's Cavalry"
+    },
+    {
+      "name": "Crucible Knight"
+    },
+    {
+      "name": "Erdtree Avatar"
+    },
+    {
+      "name": "Ulcerated Tree Spirit"
+    },
+    {
+      "name": "Magma Wyrm Makar"
+    },
+    {
+      "name": "Elemer of the Briar"
+    },
+    {
+      "name": "Ancient Dragon Lansseax"
+    },
+    {
+      "name": "Borealis the Freezing Fog"
+    },
+    {
+      "name": "Black Blade Kindred"
+    },
+    {
+      "name": "Mimic Tear"
+    },
+    {
+      "name": "Divine Beast Dancing Lion"
+    },
+    {
+      "name": "Rellana, Twin Moon Knight"
+    },
+    {
+      "name": "Messmer the Impaler",
+      "aliases": [
+        "Base Serpent Messmer"
+      ]
+    },
+    {
+      "name": "Commander Gaius"
+    },
+    {
+      "name": "Putrescent Knight"
+    },
+    {
+      "name": "Scadutree Avatar",
+      "phases": 3
+    },
+    {
+      "name": "Romina, Saint of the Bud"
+    },
+    {
+      "name": "Midra, Lord of Frenzied Flame"
+    },
+    {
+      "name": "Bayle the Dread"
+    },
+    {
+      "name": "Metyr, Mother of Fingers"
+    },
+    {
+      "name": "Promised Consort Radahn"
+    },
+    {
+      "name": "Golden Hippopotamus"
+    },
+    {
+      "name": "Death Knight"
+    },
+    {
+      "name": "Dryleaf Dane"
+    },
+    {
+      "name": "Jori, Elder Inquisitor"
+    },
+    {
+      "name": "Ancient Dragon Senessax"
+    },
+    {
+      "name": "Count Ymir, Mother of Fingers"
+    }
+  ]
+}

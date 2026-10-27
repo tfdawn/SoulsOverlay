@@ -1,0 +1,56 @@
+# Copy to config.toml and fill in the OBS password.
+
+# Which profile in profiles/ to use: elden_ring, dark_souls_3,
+# dark_souls_remastered, generic. Can be switched live from the calibration page.
+game = "elden_ring"
+
+# Where the database, control token and your overlay.css live.
+data_dir = "data"
+profiles_dir = "profiles"
+
+# Plugins get every event (death, new_pb, kill, boss_engaged, ...). See
+# examples/webhook_forwarder.py for forwarding to a chat bot on a VPS.
+plugins = []
+
+# SoulsOverlay.exe asks GitHub for a newer version when it starts, and offers it
+# in its window. Nothing is downloaded until you click Update.
+check_updates = true
+
+# Only needed if Tesseract isn't on PATH or in C:\Program Files\Tesseract-OCR.
+# tesseract_cmd = 'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+[obs]
+# OBS > Tools > WebSocket Server Settings. Enable it and copy the password.
+host = "127.0.0.1"
+port = 4455
+password = ""
+# The exact name of your game capture source in OBS.
+source = "Game Capture"
+capture_width = 1280
+# Frames analysed per second. Higher picks deaths up sooner; 4 is light on CPU.
+fps = 4.0
+# The same while a boss bar is on screen, so deaths show up on the HUD sooner.
+fight_fps = 10.0
+
+[server]
+# Always loopback. Add an origin here only if a browser-based tool (e.g. a
+# Stream Deck web plugin) needs to call the control API.
+port = 8765
+allowed_origins = []
+
+[hotkeys]
+# Needs `pip install pynput`. Syntax: https://pynput.readthedocs.io (GlobalHotKeys)
+enabled = true
+death_add = "<ctrl>+<alt>+="
+death_undo = "<ctrl>+<alt>+-"
+boss_reset = "<ctrl>+<alt>+r"
+boss_clear = "<ctrl>+<alt>+c"
+snapshot = "<ctrl>+<alt>+s"
+# Actions to leave off, e.g. ["boss_reset"]. The window's Hotkeys box sets this.
+off = []
+
+
+# [plugin_settings.webhook_forwarder]
+# url = "https://bot.example.com/souls-overlay"
+# secret_env = "SOULSOVERLAY_WEBHOOK_SECRET"
+# events = ["death", "new_pb", "kill", "boss_engaged"]

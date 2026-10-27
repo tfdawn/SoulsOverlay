@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Overlay Editor · SoulsOverlay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/settings/settings.css">
+</head>
+<body>
+  <header>
+    <h1>Overlay Editor</h1>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="hud" class="on">Simplified</button>
+      <button role="tab" data-tab="adv">The Lab</button>
+    </nav>
+    <span id="msg" role="status"></span>
+    <div class="actions">
+      <button id="export" title="Download these settings as a file to share or back up">Export</button>
+      <label class="button" title="Load a settings file someone shared">Import<input type="file" id="import" accept=".json,application/json"></label>
+      <button id="reset-all" title="Set everything back to the default look (then Save)">Reset all</button>
+      <button id="revert" title="Throw away changes since the last save">Undo changes</button>
+      <button id="save" class="primary">Save</button>
+    </div>
+  </header>
+  <main id="main">
+    <section class="controls" id="controls" aria-label="Settings"></section>
+    <section class="preview" aria-label="Preview">
+      <div class="toolbar">
+        <div class="seg" id="scenarios" aria-label="Play"></div>
+        <label class="check"><input type="checkbox" id="loop" checked> Loop</label>
+        <label class="check" title="Plays the previews slower to see each change. Preview only: in game it always runs at full speed.">Slow-mo
+          <input type="range" id="rate" min="0.05" max="1" step="0.05" value="1" aria-label="Preview speed"><output id="rate-out">1×</output></label>
+        <span class="break"></span>
+        <label class="check" title="The background behind the previews here and on The Lab tab. Preview only: nothing changes in game.">Scene
+          <select id="scene" aria-label="Preview background"></select></label>
+        <span class="grow"></span>
+        <div class="seg" id="view" data-for="hud">
+          <button data-view="close" class="on">Close-up</button><button data-view="full">Full screen</button>
+        </div>
+        <div class="seg" id="compare">
+          <button data-compare="stack">Stacked</button><button data-compare="side">Side by side</button>
+        </div>
+      </div>
+      <div class="panes" id="panes">
+        <figure class="pane">
+          <figcaption>Default</figcaption>
+          <div class="frame" id="frame-default"></div>
+        </figure>
+        <figure class="pane mine">
+          <figcaption>Your look <span class="badge" id="changes"></span></figcaption>
+          <div class="frame" id="frame-mine"></div>
+        </figure>
+      </div>
+      <p class="hint" id="hint"></p>
+    </section>
+  </main>
+  <section class="lab" id="lab" hidden aria-label="The Lab: custom NEW PB effect"></section>
+  <script src="/overlay/fx.js"></script>
+  <script src="/settings/lab.js"></script>
+  <script src="/settings/settings.js"></script>
+</body>
+</html>

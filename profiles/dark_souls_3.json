@@ -1,0 +1,143 @@
+{
+  "id": "dark_souls_3",
+  "name": "Dark Souls III",
+  "notes": "Regions are first estimates for a 16:9 frame and need checking with the calibration page against real screenshots.",
+  "regions": {
+    "death": [
+      0.25,
+      0.42,
+      0.5,
+      0.16
+    ]
+  },
+  "boss_slots": [
+    {
+      "name": [
+        0.245,
+        0.836,
+        0.36,
+        0.032
+      ],
+      "bar": [
+        0.249,
+        0.872,
+        0.502,
+        0.008
+      ]
+    },
+    {
+      "name": [
+        0.245,
+        0.786,
+        0.36,
+        0.032
+      ],
+      "bar": [
+        0.249,
+        0.822,
+        0.502,
+        0.008
+      ]
+    }
+  ],
+  "bosses": [
+    {
+      "name": "Iudex Gundyr"
+    },
+    {
+      "name": "Vordt of the Boreal Valley"
+    },
+    {
+      "name": "Curse-rotted Greatwood"
+    },
+    {
+      "name": "Crystal Sage"
+    },
+    {
+      "name": "Deacons of the Deep"
+    },
+    {
+      "name": "Abyss Watchers",
+      "phases": 2
+    },
+    {
+      "name": "High Lord Wolnir"
+    },
+    {
+      "name": "Old Demon King"
+    },
+    {
+      "name": "Pontiff Sulyvahn"
+    },
+    {
+      "name": "Yhorm the Giant"
+    },
+    {
+      "name": "Aldrich, Devourer of Gods"
+    },
+    {
+      "name": "Dancer of the Boreal Valley"
+    },
+    {
+      "name": "Dragonslayer Armour"
+    },
+    {
+      "name": "Oceiros, the Consumed King"
+    },
+    {
+      "name": "Champion Gundyr"
+    },
+    {
+      "name": "Twin Princes",
+      "aliases": [
+        "Lorian, Elder Prince"
+      ],
+      "phase_names": {
+        "Lothric, Younger Prince": 2
+      },
+      "phases": 2
+    },
+    {
+      "name": "Nameless King",
+      "aliases": [
+        "King of the Storm"
+      ],
+      "phases": 2
+    },
+    {
+      "name": "Soul of Cinder",
+      "phases": 2
+    },
+    {
+      "name": "Sister Friede",
+      "phase_names": {
+        "Father Ariandel": 2,
+        "Blackflame Friede": 3
+      },
+      "phases": 3
+    },
+    {
+      "name": "Champion's Gravetender",
+      "aliases": [
+        "Gravetender Greatwolf"
+      ]
+    },
+    {
+      "name": "Demon Prince",
+      "aliases": [
+        "Demon in Pain",
+        "Demon from Below"
+      ],
+      "phases": 2
+    },
+    {
+      "name": "Halflight, Spear of the Church"
+    },
+    {
+      "name": "Darkeater Midir"
+    },
+    {
+      "name": "Slave Knight Gael"
+    }
+  ]
+}
