@@ -281,3 +281,18 @@ def test_hotkeys_saved_to_config(config, tmp_path):
         assert load_config(config.path).hotkeys.off == ["death_undo"]
 
     with_client(config, body=body)
+
+
+def test_calibration_auto_find(config):
+    async def body(client, service):
+        r = await client.post("/api/calibrate/autofind", json={}, headers=AUTH)
+        assert r.status == 422  # no frame yet
+        shot = make_frame(service.profile, bosses=[("Margit, the Fell Omen", 100)])
+        ok, buf = cv2.imencode(".png", shot)
+        await client.post("/api/calibrate/upload", data=buf.tobytes(), headers={**AUTH, "Content-Type": "image/png"})
+        d = await (await client.post("/api/calibrate/autofind", json={}, headers=AUTH)).json()
+        assert d["scale"] == pytest.approx(1.0, abs=0.02)
+        assert d["boss_slots"][0]["bar"] == pytest.approx(service.profile.boss_slots[0]["bar"], abs=0.004)
+        assert service.profile.boss_slots[0]["bar"] == [0.2525, 0.8645, 0.495, 0.009]  # nothing saved
+
+    with_client(config, body=body)

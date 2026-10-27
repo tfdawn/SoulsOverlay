@@ -143,6 +143,13 @@ class Profile:
         min_score = self.data["ocr"]["min_score"]
         if self._choices:
             hit = process.extractOne(cleaned, list(self._choices), scorer=fuzz.WRatio)
+            # OCR often drops the space in a name ("AsylumDemon"), which costs
+            # WRatio a lot once a little scenery noise follows it; compare
+            # without spaces as well and keep the better match.
+            squashed = {k.replace(" ", ""): k for k in self._choices}
+            hit2 = process.extractOne(cleaned.replace(" ", ""), list(squashed), scorer=fuzz.WRatio)
+            if hit2 and (not hit or hit2[1] > hit[1]):
+                hit = (squashed[hit2[0]], hit2[1])
             if hit and hit[1] >= min_score:
                 canonical, phase = self._choices[hit[0]]
                 # WRatio is generous with short partial matches ("the" inside
@@ -185,12 +192,14 @@ def load_profile(profiles_dir: Path, game_id: str) -> Profile:
 # Game pickers list Elden Ring first, then the Dark Souls games in release order.
 # The Dark Souls presets haven't been checked in game yet.
 ORDER = ("elden_ring", "dark_souls_remastered", "dark_souls_2", "dark_souls_3")
-WIP = {"dark_souls_remastered", "dark_souls_2", "dark_souls_3"}
+WIP = {"dark_souls_2", "dark_souls_3"}
 
 
 def list_profiles(profiles_dir: Path) -> list[dict]:
     out = []
     for p in sorted(Path(profiles_dir).glob("*.json")):
+        if p.name.startswith("."):  # .shipped.json, written by app.copy_profiles
+            continue
         try:
             data = json.loads(p.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):

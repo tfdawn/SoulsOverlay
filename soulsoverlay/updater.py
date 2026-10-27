@@ -28,6 +28,20 @@ from . import __version__, app
 
 log = logging.getLogger(__name__)
 
+
+def fresh_env() -> dict:
+    """Environment for starting the new exe as a program of its own.
+
+    PyInstaller passes its unpack folder (_MEI...) to child processes, so the
+    new exe would run out of this one's folder; when this one quits, it can't
+    delete that folder ("Failed to remove temporary directory"). Ask the new
+    exe to unpack its own copy instead.
+    """
+    env = {k: v for k, v in os.environ.items()
+           if not k.startswith("_PYI_") and k not in ("_MEIPASS2", "_PYI_ONEDIR_MODE")}
+    env["PYINSTALLER_RESET_ENVIRONMENT"] = "1"
+    return env
+
 REPO = "tfdawn/SoulsOverlay"
 API = f"https://api.github.com/repos/{REPO}/releases/latest"
 ASSET = "SoulsOverlay.exe"
@@ -147,4 +161,5 @@ class Updater:
             raise
         self._set(state="restarting")
         subprocess.Popen([str(current), "launcher", "--after-update"], cwd=str(current.parent),
-                         close_fds=True, creationflags=getattr(subprocess, "DETACHED_PROCESS", 0))
+                         close_fds=True, creationflags=getattr(subprocess, "DETACHED_PROCESS", 0),
+                         env=fresh_env())

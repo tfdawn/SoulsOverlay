@@ -54,6 +54,11 @@ class Tracker:
         self.bar_boss: str | None = None  # whose bar that is
         self._bar_misses = 0
         self._bar_miss_t = -1e9  # when the bar first went missing
+        # Dark Souls Remastered keeps the bar of the boss that killed us up
+        # after "YOU DIED" fades, until the loading screen. That's still the
+        # fight that just ended, so the boss can't be engaged again until its
+        # bar has gone away once.
+        self._killed_by: str | None = None
 
     @property
     def cfg(self) -> dict:
@@ -99,7 +104,8 @@ class Tracker:
         # ended, not a new one.
         dying = r.death or self._death_latched
         if (boss_now and not dying and (sure or self._candidate[1] >= cfg["confirm_reads"])
-                and (self.encounter is None or self.encounter.boss != boss_now)):
+                and (self.encounter is None or self.encounter.boss != boss_now)
+                and boss_now != self._killed_by):
             if self.encounter:
                 events.append(("disengage", {"boss": self.encounter.boss}))
             bars = min(self.profile.bar_count(boss_now), max(1, len(self.profile.boss_slots)))
@@ -137,6 +143,7 @@ class Tracker:
             self._last_death_t = now
             events.append(("death", self._death_payload(now)))
             if self.encounter:
+                self._killed_by = self.encounter.boss
                 self.encounter = None
             return events
 
@@ -197,6 +204,7 @@ class Tracker:
     def _set_bar_up(self, up: bool, events):
         if not up and self.encounter is None:
             self.bar_boss = None
+            self._killed_by = None
         if up != self.bar_up:
             self.bar_up = up
             events.append(("bar", {"up": up}))

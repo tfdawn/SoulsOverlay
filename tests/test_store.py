@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from soulsoverlay.store import Store, pb_better
 
@@ -76,6 +78,34 @@ def test_copy_profiles_keeps_calibrated_ones(tmp_path):
     app.copy_profiles(tmp_path)
     assert (tmp_path / "elden_ring.json").read_text() == "calibrated"
     assert (tmp_path / "dark_souls_3.json").exists() and (tmp_path / "templates" / "elden_ring_death.png").exists()
+
+
+def test_copy_profiles_updates_untouched_ones(tmp_path):
+    from soulsoverlay import app
+    from soulsoverlay.profiles import list_profiles
+
+    src = app.bundle_dir() / "profiles"
+    # As left by v1.0.1: the old DSR preset, never calibrated, and no manifest.
+    old = tmp_path / "dark_souls_remastered.json"
+    old.write_text("old preset")
+    app.OLD_SHIPPED["dark_souls_remastered.json"] = app._digest(old)
+    try:
+        app.copy_profiles(tmp_path)
+    finally:
+        del app.OLD_SHIPPED["dark_souls_remastered.json"]
+    assert old.read_bytes() == (src / "dark_souls_remastered.json").read_bytes()
+
+    # A later update replaces what we shipped, but not what the user calibrated.
+    old.write_text("shipped in 1.0.2")
+    (tmp_path / "elden_ring.json").write_text("calibrated")
+    manifest = tmp_path / ".shipped.json"
+    data = json.loads(manifest.read_text())
+    data["dark_souls_remastered.json"] = app._digest(old)
+    manifest.write_text(json.dumps(data))
+    app.copy_profiles(tmp_path)
+    assert old.read_bytes() == (src / "dark_souls_remastered.json").read_bytes()
+    assert (tmp_path / "elden_ring.json").read_text() == "calibrated"
+    assert ".shipped" not in {g["id"] for g in list_profiles(tmp_path)}
 
 
 def test_game_list_puts_elden_ring_first():

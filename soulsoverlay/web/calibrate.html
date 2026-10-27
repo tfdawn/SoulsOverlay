@@ -12,6 +12,7 @@
     <label>Game <select id="game"></select></label>
     <button id="grab">Grab frame from OBS</button>
     <label class="file">Load screenshot<input type="file" id="file" accept="image/*"></label>
+    <button id="autofind">Auto-find boss bar</button>
     <button id="test">Test detection</button>
     <button id="save" class="primary">Save profile</button>
     <button id="resume">Resume live capture</button>
@@ -20,7 +21,8 @@
   <main>
     <section class="stage">
       <canvas id="canvas" width="1280" height="720"></canvas>
-      <p class="hint">Pick a region on the right, then drag a box on the frame. The bar box should
+      <p class="hint">Pick a region on the right, then drag a box on the frame, or let Auto-find place the
+        boss boxes from a frame with a boss at full health. The bar box should
         cover only the inside of the boss bar (no frame or ornaments). Add a second boss slot only
         for duo fights that show two bars.</p>
     </section>
@@ -29,6 +31,14 @@
       <ul id="regions"></ul>
       <button id="add-slot">Add boss slot</button>
       <button id="remove-slot">Remove last slot</button>
+      <div id="hud-box" hidden>
+        <h2>HUD scale</h2>
+        <p class="small">Type the HUD scale from the game's options to move the boss and death boxes
+          to match, then save. Auto-find fills this in too.</p>
+        <label class="hud">In-game HUD scale
+          <input type="number" id="hud-scale" step="0.01"></label>
+        <button id="hud-apply">Apply</button>
+      </div>
       <h2>Zoom</h2>
       <canvas id="zoom" width="320" height="120"></canvas>
       <h2>Death template</h2>

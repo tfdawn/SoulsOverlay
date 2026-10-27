@@ -13,7 +13,7 @@ lights up with **NEW PB**.
 
 It watches your game through OBS, so it never touches the game: no mods, no memory reading.
 
-Works with **Elden Ring** out of the box.
+Works with **Elden Ring** and **Dark Souls Remastered** out of the box.
 
 ## Get started
 
@@ -37,7 +37,9 @@ That's it. Fight a boss, and your deaths and PB appear under its health bar.
 - **Start / Stop** the tracking.
 - **Character:** keep separate deaths and PBs for each character. Switch, add or rename them at the top.
 - **Settings** has the **Overlay Editor** (colour themes, a colour for each part of the text, and the NEW PB effect, with a live preview) and the hotkeys.
-- **Calibrate** shows it where the game draws its boss bar, if you play on an ultrawide screen.
+- **Calibrate** shows it where the game draws its boss bar, if you play on an ultrawide screen or
+  changed the HUD scale in Dark Souls Remastered. **Auto-find boss bar** does it for you from a
+  frame with a boss at full health, or type in your HUD scale.
 - **Updates:** when a new version is out, the window offers it. Click **Update…**, confirm, and
   it restarts on the new version. Your settings and stats are kept.
 - Closing the window keeps it running in the tray, so it keeps counting. To have it quit instead, turn off

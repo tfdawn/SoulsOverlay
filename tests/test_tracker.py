@@ -193,3 +193,19 @@ def test_faint_red_without_the_bar_vanishing_is_not_a_death(er):
     late = reading(er, 5.0)
     late.death_score = 0.3
     assert not kinds(run(tr, [reading(er, t * 0.5) for t in range(1, 10)] + [late]), "death")
+
+
+def test_bar_left_up_after_the_banner_is_not_a_new_fight(er):
+    # Dark Souls Remastered: the bar of the boss that killed us stays up after
+    # YOU DIED fades, until the loading screen. Only the next fight engages.
+    tr = Tracker(er)
+    boss = "Margit, the Fell Omen"
+    seq = [reading(er, t * 0.5, slot(er, boss, 40)) for t in range(4)]
+    seq += [reading(er, 2 + t * 0.5, slot(er, boss, 40), death=True) for t in range(4)]
+    seq += [reading(er, 4 + t * 0.5, slot(er, boss, 40)) for t in range(8)]  # banner gone, bar still up
+    seq += [reading(er, 8 + t * 0.5) for t in range(6)]  # loading screen
+    seq += [reading(er, 11 + t * 0.5, slot(er, boss, 100)) for t in range(4)]  # back in the fog
+    ev = run(tr, seq)
+    assert len(kinds(ev, "death")) == 1
+    assert [e["boss"] for e in kinds(ev, "engage")] == [boss, boss]
+    assert tr.encounter and tr.encounter.started == 11

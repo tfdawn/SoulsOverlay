@@ -117,3 +117,62 @@ def test_death_counts_while_the_bar_is_still_up(er_real, width):
     assert read_bar(img, er_real.boss_slots[0]["bar"], er_real.data["bar_colors"]).pct is not None
     hit, score = a.death.detect(frame("er_sentinel_fight", width))
     assert not hit and score < 0.25
+
+
+# -- Dark Souls Remastered: Asylum Demon at HUD scale 0.80 (2560x1440 shots
+# and a 60 fps 1080p death clip, stored at 1080p) ----------------------------
+
+@pytest.fixture(scope="module")
+def dsr():
+    return load_profile(ROOT / "profiles", "dark_souls_remastered")
+
+
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+@pytest.mark.parametrize("name,pct,trail", [
+    ("dsr_asylum_full", 100, 0), ("dsr_asylum_trail", 64.6, 35.0), ("dsr_asylum_lost", 41.2, 0),
+    ("dsr_asylum_fight", 36.4, 0)])
+def test_dsr_bar(dsr, width, name, pct, trail):
+    r = read_bar(frame(name, width), dsr.boss_slots[0]["bar"], dsr.data["bar_colors"])
+    assert r.pct == pytest.approx(pct, abs=1.0)
+    assert r.trail_pct == pytest.approx(trail, abs=1.5)
+
+
+@needs_tesseract
+@pytest.mark.parametrize("name", ["dsr_asylum_full", "dsr_asylum_trail", "dsr_asylum_lost"])
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+def test_dsr_boss_name(dsr, name, width):
+    slot = Analyzer(dsr).analyze(frame(name, width), force_ocr=True).slots[0]
+    assert slot.match is not None and slot.match.boss == "Asylum Demon", slot.text
+
+
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+def test_dsr_death(dsr, width):
+    a = Analyzer(dsr)
+    assert a.death.mode == "template"
+    hit, score = a.death.detect(frame("dsr_asylum_died", width))
+    assert hit and score > 0.9
+    # 0.6s into the fade-in, the first frame over the threshold
+    hit, score = a.death.detect(frame("dsr_asylum_died_fadein", width))
+    assert hit
+    for name in ("dsr_asylum_fight", "dsr_asylum_full", "dsr_asylum_trail"):
+        hit, score = a.death.detect(frame(name, width))
+        assert not hit and score < 0.2, name
+
+
+def test_ocr_dropping_the_space_still_matches(dsr):
+    assert dsr.match_boss("AsylumDemon : ok Ne _").boss == "Asylum Demon"
+
+
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+def test_dsr_death_follows_the_hud_scale(dsr, width):
+    """YOU DIED at HUD scale 1.00 is 1.25x the 0.80 one, about the screen centre."""
+    img = cv2.imread(str(FIX / "dsr_died_hud100_1080p.jpg"))
+    img = cv2.resize(img, (width, width * 9 // 16), interpolation=cv2.INTER_AREA)
+    assert not Analyzer(dsr).death.detect(img)[0]
+    k = 1.0 / dsr.data["hud_scale"]["value"]
+    ax, ay = dsr.data["hud_scale"]["death_anchor"]
+    x, y, w, h = dsr.regions["death"]
+    moved = load_profile(ROOT / "profiles", "dark_souls_remastered")
+    moved.update({"regions": {"death": [ax + (x - ax) * k, ay + (y - ay) * k, w * k, h * k]}})
+    hit, score = Analyzer(moved).death.detect(img)
+    assert hit and score > 0.6

@@ -29,3 +29,6 @@ aside { background: var(--panel); border: 1px solid var(--line); border-radius: 
 #zoom { width: 100%; background: #000; border-radius: 4px; image-rendering: pixelated; }
 pre { white-space: pre-wrap; font: 12px ui-monospace, monospace; background: var(--bg); padding: 8px;
       border-radius: 4px; max-height: 340px; overflow: auto; }
+.hud { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.hud input { width: 80px; font: inherit; padding: 4px 6px; border: 1px solid var(--line); border-radius: 5px;
+             background: var(--bg); color: var(--fg); }

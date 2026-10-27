@@ -13,6 +13,7 @@ from .capture import Backoff, ObsCapture
 from .config import Config
 from .detect import bossname
 from .detect.analyzer import Analyzer, FrameReading
+from .detect.autofind import auto_find
 from .detect.screen import save_template
 from .events import Event, EventBus
 from .profiles import Profile, list_profiles, load_profile
@@ -244,6 +245,29 @@ class Service:
         reading = Analyzer(self.profile).analyze(self.last_frame, force_ocr=True)
         return {**reading.to_json(), "detector": self.analyzer.death.mode,
                 "frame": {"w": int(self.last_frame.shape[1]), "h": int(self.last_frame.shape[0])}}
+
+    def auto_find(self) -> dict:
+        """Boss boxes fitted to the bar on the paused frame, for the calibration
+        page to show. Nothing is saved until the page saves the profile."""
+        if self.last_frame is None:
+            raise ValueError("no frame yet: grab one from OBS or load a screenshot")
+        found = auto_find(self.last_frame, self.profile.data)
+        if found is None:
+            raise ValueError("no boss bar found: grab a frame with a boss bar on screen")
+        out = {"boss_slots": found.boss_slots, "scale": found.scale, "bars": len(found.bars)}
+        hud = self.profile.data.get("hud_scale")
+        if hud:
+            out["hud_scale"] = round(hud["value"] * found.scale, 2)
+            # YOU DIED grows with the HUD too, about its own anchor.
+            death = self.profile.regions.get("death")
+            if death and hud.get("death_anchor"):
+                ax, ay = hud["death_anchor"]
+                k = found.scale
+                out["regions"] = {"death": [round(ax + (death[0] - ax) * k, 4), round(ay + (death[1] - ay) * k, 4),
+                                            round(death[2] * k, 4), round(death[3] * k, 4)]}
+        if found.bar_colors:
+            out["bar_colors"] = found.bar_colors
+        return out
 
     def snapshot(self) -> dict:
         """Save the latest live frame and log what detection makes of it.

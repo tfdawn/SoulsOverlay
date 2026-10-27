@@ -94,6 +94,7 @@ class OverlayServer:
         r.add_post("/api/calibrate/profile", self.cal_save_profile)
         r.add_post("/api/calibrate/diagnose", self.cal_diagnose)
         r.add_post("/api/calibrate/template", self.cal_template)
+        r.add_post("/api/calibrate/autofind", self.cal_autofind)
         r.add_post("/api/settings", self.save_settings)
         r.add_get("/api/launcher", self.launcher_info)
         r.add_post("/api/launcher/obs", self.launcher_obs)
@@ -352,7 +353,7 @@ class OverlayServer:
 
     async def cal_save_profile(self, request):
         body = await request.json()
-        allowed = {"regions", "boss_slots", "bar_colors", "death", "victory", "ocr", "tracking"}
+        allowed = {"regions", "boss_slots", "bar_colors", "death", "victory", "ocr", "tracking", "hud_scale"}
         changes = {k: v for k, v in body.items() if k in allowed}
         if not changes:
             return _json_error(400, "nothing to save")
@@ -383,6 +384,13 @@ class OverlayServer:
         except ValueError as e:
             return _json_error(400, str(e))
         return web.json_response({"ok": True, "template": rel})
+
+    async def cal_autofind(self, _request):
+        try:
+            result = await asyncio.to_thread(self.service.auto_find)
+        except ValueError as e:
+            return _json_error(422, str(e))
+        return web.json_response(result)
 
 
 def _check_region(r):

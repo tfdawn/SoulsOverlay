@@ -92,7 +92,13 @@ def test_swap_keeps_old_exe_aside(tmp_path, monkeypatch):
     new.write_bytes(b"new")
     started = []
     monkeypatch.setattr(updater.sys, "executable", str(current))
-    monkeypatch.setattr(updater.subprocess, "Popen", lambda args, **kw: started.append(args))
+    monkeypatch.setattr(updater.subprocess, "Popen", lambda args, **kw: started.append((args, kw)))
+    monkeypatch.setenv("_PYI_APPLICATION_HOME_DIR", r"C:\Temp\_MEI123")
+    monkeypatch.setenv("_MEIPASS2", r"C:\Temp\_MEI123")
     updater.Updater().swap_and_restart(new)
     assert current.read_bytes() == b"new" and (tmp_path / "SoulsOverlay.exe.old").read_bytes() == b"old"
-    assert started[0][1:] == ["launcher", "--after-update"]
+    args, kw = started[0]
+    assert args[1:] == ["launcher", "--after-update"]
+    # The new exe unpacks its own folder instead of using this one's.
+    assert kw["env"]["PYINSTALLER_RESET_ENVIRONMENT"] == "1"
+    assert "_PYI_APPLICATION_HOME_DIR" not in kw["env"] and "_MEIPASS2" not in kw["env"]

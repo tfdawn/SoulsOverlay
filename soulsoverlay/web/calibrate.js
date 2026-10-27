@@ -19,6 +19,8 @@
   let slots = [];       // [{name, bar}]
   let active = "slot0.bar";
   let drag = null;
+  let barColors = null; // from Auto-find, when the game's own colours didn't match
+  let hud = null;       // {value, min, max, anchor}: the HUD scale the boss boxes are drawn for
 
   function say(text, bad) { $("msg").textContent = text; $("msg").style.color = bad ? "#e5484d" : ""; }
 
@@ -187,6 +189,11 @@
     regions = { death: data.effective.regions.death || null, victory: data.effective.regions.victory || null };
     slots = (data.effective.boss_slots || []).map((s) => ({ name: s.name || null, bar: s.bar || null }));
     if (!slots.length) slots = [{ name: null, bar: null }];
+    hud = data.effective.hud_scale ? { ...data.effective.hud_scale } : null;
+    $("hud-box").hidden = !hud;
+    if (hud) {
+      Object.assign($("hud-scale"), { min: hud.min, max: hud.max, value: hud.value.toFixed(2) });
+    }
     renderList(); draw();
   }
 
@@ -223,9 +230,47 @@
     const regs = {};
     for (const k of ["death", "victory"]) if (regions[k]) regs[k] = regions[k];
     await api("/api/calibrate/profile", { method: "POST", json: {
-      regions: regs, boss_slots: slots.filter((s) => s.name || s.bar) } });
+      regions: regs, boss_slots: slots.filter((s) => s.name || s.bar),
+      ...(barColors ? { bar_colors: barColors } : {}),
+      ...(hud ? { hud_scale: { value: hud.value } } : {}) } });
+    barColors = null;
     say("Saved");
   });
+  $("autofind").onclick = run(async () => {
+    say("Looking for the boss bar…");
+    const d = await (await api("/api/calibrate/autofind", { method: "POST", json: {} })).json();
+    slots = d.boss_slots.map((s) => ({ name: s.name || null, bar: s.bar || null }));
+    barColors = d.bar_colors || null;
+    if (d.regions) Object.assign(regions, d.regions);
+    active = "slot0.bar";
+    let size = d.scale === 1 ? "" : ` at ${Math.round(d.scale * 100)}% of the preset's size`;
+    if (hud && d.hud_scale) {
+      hud.value = d.hud_scale;
+      $("hud-scale").value = d.hud_scale.toFixed(2);
+      size = ` for a HUD scale of about ${d.hud_scale.toFixed(2)}`;
+    }
+    renderList(); draw();
+    say(`Found the boss bar${size}. Check the boxes, then Save profile.`);
+  });
+  // The HUD grows and shrinks about a fixed point (the bottom centre in DSR),
+  // so a new scale moves every boss box the same way. YOU DIED scales too,
+  // about its own point (the centre of the screen).
+  $("hud-apply").onclick = () => {
+    const want = parseFloat($("hud-scale").value);
+    if (!hud || !(want >= hud.min && want <= hud.max)) {
+      say(`The HUD scale goes from ${hud.min.toFixed(2)} to ${hud.max.toFixed(2)}`, true);
+      return;
+    }
+    const k = want / hud.value;
+    const mover = ([ax, ay]) => (r) => r && [ax + (r[0] - ax) * k, ay + (r[1] - ay) * k, r[2] * k, r[3] * k]
+      .map((v) => +v.toFixed(4));
+    const move = mover(hud.anchor);
+    slots = slots.map((s) => ({ name: move(s.name), bar: move(s.bar) }));
+    if (hud.death_anchor) regions.death = mover(hud.death_anchor)(regions.death);
+    hud.value = want;
+    renderList(); draw();
+    say(`Boxes moved for a HUD scale of ${want.toFixed(2)}. Check them, then Save profile.`);
+  };
   $("test").onclick = run(async () => {
     const d = await (await api("/api/calibrate/diagnose", { method: "POST", json: {} })).json();
     const lines = [

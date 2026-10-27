@@ -45,11 +45,20 @@ deaths and PBs carry over on the first start. If you installed the old version w
 
 ## Calibrate once per game
 
-The Elden Ring preset has been calibrated against real 1440p screenshots and comes with a
-death template, so on a 16:9 screen it should work as it is. The Dark Souls III and Dark Souls
-Remastered presets are a work in progress (marked WiP in the game list) and still use
-*estimated* regions. Check them, and Elden Ring if you play
-ultrawide, before you rely on them:
+The Elden Ring and Dark Souls Remastered presets have been calibrated against real
+screenshots and come with a death template, so on a 16:9 screen they should work as they are.
+The Dark Souls III preset is a work in progress (marked WiP in the game list) and still uses
+*estimated* regions. Check it, and the others if you play ultrawide, before you rely on it.
+
+Dark Souls Remastered lets you change the HUD scale, which moves the boss bar. Its preset
+matches a HUD scale of 0.80. For any other value, open the calibration page, type your HUD
+scale under **HUD scale**, click **Apply**, then **Save profile**.
+
+**Auto-find boss bar** places the boss boxes for you on any game: get a frame with a boss at
+full health (or just after its first hit), click it, check the boxes, and save. It finds the
+bar and moves the name box and the second boss slot along with it.
+
+To calibrate by hand:
 
 1. With SoulsOverlay running, click **Calibrate** in its window (or run `soulsoverlay calibrate`
    in a second terminal).
