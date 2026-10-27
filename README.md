@@ -60,3 +60,7 @@ That's it. Fight a boss, and your deaths and PB appear under its health bar.
 The window says what's wrong, for example when it can't reach OBS or can't see the game.
 The log is in `data\soulsoverlay.log` next to the exe. For everything else, such as custom CSS,
 game profiles, chat bot events and running from source, see the [advanced guide](docs/ADVANCED.md).
+
+## Credits
+
+- [cerkie](https://github.com/cerkie) - Created The Lab in the Overlay Editor.
