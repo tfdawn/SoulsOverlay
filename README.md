@@ -20,9 +20,9 @@ Supported games:
 - **Dark Souls II: Scholar of the First Sin**, including the DLCs
 - **Dark Souls III** (WiP: not checked against the game yet, so it may need calibrating)
 
-<sub>The presets are tested on 16:9 screens (2560x1440, 1920x1080 and 1280x720). On ultrawide or
-other aspect ratios the boss bar sits somewhere else, so use <b>Calibrate</b> once (<b>Auto-find boss bar</b>
-does most of it for you).</sub>
+> **Playing on ultrawide?** The presets are tested on 16:9 screens (2560x1440, 1920x1080 and
+> 1280x720). On other aspect ratios the boss bar sits somewhere else, so use **Calibrate** once.
+> **Auto-find boss bar** does most of it for you.
 
 ## Get started
 
