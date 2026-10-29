@@ -303,3 +303,20 @@ def test_group_without_phases_averages_with_late_and_fallen_bars():
     ev = run(tr, [at(t, 100, 100) for t in (4.0, 4.5, 5.0)])  # Yahim falls
     assert kinds(ev, "live")[-1]["pct"] == pytest.approx(66.7, abs=0.1)
     assert not kinds(ev, "phase")
+
+
+@pytest.mark.parametrize("game,boss", [("elden_ring", "Margit, the Fell Omen"),
+                                       ("dark_souls_remastered", "Asylum Demon"),
+                                       ("dark_souls_2", "Dragonrider"),
+                                       ("dark_souls_3", "Iudex Gundyr")])
+def test_defeated_in_every_game(game, boss):
+    from pathlib import Path
+
+    from soulsoverlay.profiles import load_profile
+
+    p = load_profile(Path(__file__).resolve().parents[1] / "profiles", game)
+    tr = Tracker(p)
+    ev = run(tr, drained(p, boss, 6.0))
+    assert kinds(ev, "defeated") == [{"boss": boss, "phase": 1}]
+    ev = run(tr, [reading(p, 6.5), reading(p, 7.0), reading(p, 7.5)])
+    assert kinds(ev, "kill") == [{"boss": boss, "phase": 1, "shown": True}]

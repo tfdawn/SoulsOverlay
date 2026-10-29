@@ -1,8 +1,7 @@
-## What's new in 1.0.4
+## What's new in 1.0.5
 
-- **Dark Souls II** is no longer a work in progress. Deaths, boss names and boss health are set up from real Scholar of the First Sin footage, with its own YOU DIED image, boss bar colours and up to three boss bars (Ruin Sentinels, Skeleton Lords and the other group fights).
-- The boss list covers the original game, Scholar of the First Sin and all three DLCs, and recognises each bar's own name in group fights (for example "Ruin Sentinel Yahim").
-- Your Dark Souls II preset updates with the app, unless you've saved your own calibration for it.
+- **DEFEATED shows the moment the boss's bar hits 0%**, instead of several seconds after the bar is gone (in Elden Ring it used to land on top of the item reward).
+- If the boss survived on a sliver of health the bar can't show and YOU DIED comes up while the boss is still on screen, DEFEATED is taken back and it counts as a death instead. Dying after the boss has gone keeps the kill.
 
 ## How to install
 

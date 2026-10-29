@@ -5,6 +5,7 @@ import shutil
 from pathlib import Path
 
 import cv2
+import numpy as np
 import pytest
 
 from soulsoverlay.detect.analyzer import Analyzer
@@ -289,3 +290,84 @@ def test_watch_names_reads_the_name_after_the_bar_empties(er_real):
     r = a.analyze(img, now=0.5, watch_names=True)
     assert r.slots[0].pct is None
     assert r.slots[0].match and r.slots[0].match.boss == "Morgott, the Omen King"
+
+
+# -- DEFEATED at 0%, on each game's real frames -------------------------------
+# From each game's low-health shot: the red repainted in the colour of the
+# damage trail from its trail shot (the killing blow: 0%, trail draining), the
+# whole bar in its empty colour (a sliver too small to show, name still up),
+# and the bar and name strip blanked (the boss gone).
+
+GAMES = [("elden_ring", "er_sentinel_low", "er_morgott_trail", "Tree Sentinel", "er_sentinel_died_fadein"),
+         ("dark_souls_remastered", "dsr_asylum_fight", "dsr_asylum_trail", "Asylum Demon", "dsr_asylum_died"),
+         ("dark_souls_2", "ds2_dragonrider_low", "ds2_dragonrider_trail", "Dragonrider", "ds2_dragonrider_died")]
+
+
+def _box(img, region):
+    H, W = img.shape[:2]
+    x, y, w, h = region
+    return int(x * W), int(y * H), int(round(w * W)), max(1, int(round(h * H)))
+
+
+def _killing_blow_frames(profile, img, trail_img):
+    from soulsoverlay.detect import hsv_mask
+
+    x, y, w, h = _box(img, profile.boss_slots[0]["bar"])
+    colors = profile.data["bar_colors"]
+    cols = lambda bar, spec: hsv_mask(bar, spec).mean(axis=0) >= colors.get("column_threshold", 0.35)
+    tbar = trail_img[y:y + h, x:x + w]
+    trail_px = tbar[:, cols(tbar, colors["trail"]) & ~cols(tbar, colors["fill"])].reshape(-1, 3)
+    bar = img[y:y + h, x:x + w]
+    fill = cols(bar, colors["fill"])
+    empty_x = int(np.flatnonzero(fill).max()) + 8
+    zero = img.copy()
+    zbar = zero[y:y + h, x:x + w]
+    zbar[:, fill] = np.median(trail_px, axis=0).astype(np.uint8)  # all of it trail now
+    empty = img.copy()
+    empty[y:y + h, x:x + w] = bar[:, empty_x:empty_x + 1]  # the empty bar's colour
+    return zero, empty, _without_boss(profile, empty)
+
+
+def _without_boss(profile, img):
+    img = img.copy()
+    for key in ("bar", "name"):
+        bx, by, bw, bh = _box(img, profile.boss_slots[0][key])
+        img[by - 3:by + bh + 3, bx - 3:bx + bw + 3] = img[by - 40:by - 10, bx:bx + bw].mean(axis=(0, 1))
+    return img
+
+
+@needs_tesseract
+@pytest.mark.parametrize("game,low_shot,trail_shot,boss,died", GAMES)
+def test_defeated_on_real_frames(game, low_shot, trail_shot, boss, died):
+    from soulsoverlay.tracker import Tracker
+
+    profile = load_profile(ROOT / "profiles", game)
+    src = frame(low_shot, 1920)
+    zero, empty, gone = _killing_blow_frames(profile, src, frame(trail_shot, 1920))
+    a = Analyzer(profile)
+    assert read_bar(zero, profile.boss_slots[0]["bar"], profile.data["bar_colors"]).pct == 0.0
+    assert read_bar(empty, profile.boss_slots[0]["bar"], profile.data["bar_colors"]).pct is None
+
+    def play(frames, t0=0.0):
+        tr, ev, a = Tracker(profile), [], Analyzer(profile)
+        for i, img in enumerate(frames):
+            r = a.analyze(img, now=t0 + i * 0.1, watch_names=tr.defeat_pending)
+            ev += [(round(r.t, 1), k, d) for k, d in tr.update(r)]
+        return ev
+
+    # Killed: DEFEATED on the second 0% frame, the kill 1.5s after the boss goes.
+    ev = play([src] * 3 + [zero] * 3 + [gone] * 20)
+    assert [(t, k) for t, k, _ in ev if k in ("defeated", "kill", "defeated_cancel")] == [
+        (0.4, "defeated"), (2.0, "kill")]
+    assert [d["boss"] for _, k, d in ev if k == "kill"] == [boss]
+
+    # A sliver left: the bar looks empty but the name stays, then YOU DIED.
+    ev = play([src] * 3 + [zero] * 3 + [empty] * 20 + [frame(died, 1920)] * 3)
+    kinds = [k for _, k, _ in ev if k in ("defeated", "kill", "defeated_cancel", "death")]
+    assert kinds == ["defeated", "defeated_cancel", "death"]
+    assert [d["boss"] for _, k, d in ev if k == "death"] == [boss]
+
+    # Boss gone, then we die: the kill stands.
+    ev = play([src] * 3 + [zero] * 3 + [gone] * 8 + [_without_boss(profile, frame(died, 1920))] * 3)
+    kinds = [k for _, k, _ in ev if k in ("defeated", "kill", "defeated_cancel", "death")]
+    assert kinds == ["defeated", "kill", "death"]
