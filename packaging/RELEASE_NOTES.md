@@ -1,6 +1,6 @@
 ## What's new in 1.0.13
 
-- **Settings has a "Switch game by itself" option.** Untick it to be asked before SoulsOverlay switches to the game you start from Steam, or tick it again if you turned switching off from the notice.
+- **Settings has an "Auto-switch game" option.** Untick it to be asked before SoulsOverlay switches to the game you start from Steam, or tick it again if you turned switching off from the notice.
 - Clearer wording when SoulsOverlay switches game by itself: the notice now says it also switched your character profile to match the game that's running.
 
 ## How to install

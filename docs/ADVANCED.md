@@ -186,8 +186,7 @@ PBs, but never in the middle of a boss fight. Pick another game by hand and it l
 until that game closes.
 
 It can't tell on a console through a capture card, or when the game runs on another PC: pick
-the game in the window then. To be asked first instead of switching, untick **Switch game by
-itself** in Settings (or click **Don't switch by itself** on the notice). It's saved as
+the game in the window then. To be asked first instead of switching, untick **Auto-switch game** in Settings (or click **Don't switch by itself** on the notice). It's saved as
 `auto_switch` under `[game_detect]` in `config.toml`.
 
 ## Game profiles
