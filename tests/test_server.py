@@ -94,6 +94,7 @@ def test_origin_host_and_content_type_checks(config):
 def test_overlay_websocket_gets_state_and_events(config):
     async def body(client, service):
         ws = await client.ws_connect("/overlay/ws")
+        assert (await ws.receive_json(timeout=2))["kind"] == "hello"
         first = await ws.receive_json(timeout=2)
         assert first["kind"] == "state"
         await client.post("/api/control", json={"command": "boss_set", "args": {"boss": "margit"}}, headers=AUTH)
@@ -294,5 +295,43 @@ def test_calibration_auto_find(config):
         assert d["scale"] == pytest.approx(1.0, abs=0.02)
         assert d["boss_slots"][0]["bar"] == pytest.approx(service.profile.boss_slots[0]["bar"], abs=0.004)
         assert service.profile.boss_slots[0]["bar"] == [0.2525, 0.8645, 0.495, 0.009]  # nothing saved
+
+    with_client(config, body=body)
+
+
+def test_hud_left_on_old_files_is_reported_and_new_ones_reload(config, monkeypatch):
+    import soulsoverlay.server as srv
+
+    monkeypatch.setattr(srv, "HELLO_GRACE_S", 0.2)
+
+    async def next_kind(ws, kind):
+        while True:
+            msg = await ws.receive_json(timeout=2)
+            if msg["kind"] == kind:
+                return msg
+
+    async def body(client, service):
+        html = await (await client.get("/overlay/hud")).text()
+        assert f'data-build="{srv.HUD_BUILD}"' in html
+        launcher = await client.ws_connect("/overlay/ws")
+        assert (await next_kind(launcher, "hello"))["build"] == srv.HUD_BUILD
+        assert (await next_kind(launcher, "hud_status"))["stale"] == 0
+        await launcher.send_json({"kind": "hello", "role": "launcher"})
+        current = await client.ws_connect("/overlay/ws")
+        await current.send_json({"kind": "hello", "role": "hud", "build": srv.HUD_BUILD})
+        await asyncio.sleep(0.4)
+        info = await (await client.get("/api/launcher", headers=AUTH)).json()
+        assert info["stale_huds"] == 0
+        # A HUD from before this version never says hello.
+        old = await client.ws_connect("/overlay/ws")
+        assert (await next_kind(launcher, "hud_status"))["stale"] == 1
+        await old.close()
+        assert (await next_kind(launcher, "hud_status"))["stale"] == 0
+        # One that says hello with another build is stale straight away.
+        other = await client.ws_connect("/overlay/ws")
+        await other.send_json({"kind": "hello", "role": "hud", "build": "0ld"})
+        assert (await next_kind(launcher, "hud_status"))["stale"] == 1
+        for ws in (launcher, current, other):
+            await ws.close()
 
     with_client(config, body=body)

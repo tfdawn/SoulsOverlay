@@ -16,8 +16,9 @@ click **Check for updates** at the bottom). Click **Update…** and confirm: it 
 exe from this repository's Releases page, checks it against the release's SHA-256 checksum,
 swaps it in and restarts. Your `config.toml`, `data` and calibrated profiles are kept. Nothing
 is downloaded until you confirm, and `check_updates = false` in `config.toml` turns the check
-off. Afterwards, refresh the Browser Source in OBS. You can also update by hand: download the
-new `SoulsOverlay.exe` over the old one.
+off. The overlay in OBS reloads itself when it sees the new version (from 1.0.7 on; if it's
+older than that, the window asks you to refresh the Browser source once). You can also update
+by hand: download the new `SoulsOverlay.exe` over the old one.
 
 ## Running from source (Python)
 

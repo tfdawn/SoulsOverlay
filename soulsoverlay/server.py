@@ -18,6 +18,7 @@ Security model
 from __future__ import annotations
 
 import asyncio
+import hashlib
 import hmac
 import json
 import logging
@@ -36,6 +37,13 @@ from .service import Service
 log = logging.getLogger(__name__)
 WEB = Path(__file__).parent / "web"
 MAX_UPLOAD = 25 * 1024 * 1024
+# The files an OBS Browser source runs. OBS keeps running the copy it loaded
+# until the source is refreshed, so after an update the HUD compares the build
+# it was served with this one and reloads itself if they differ.
+HUD_FILES = ("hud.html", "hud.js", "hud.css", "style.js", "fx.js")
+HUD_BUILD = hashlib.sha1(b"".join((WEB / f).read_bytes() for f in HUD_FILES)).hexdigest()[:12]
+# HUDs from before 1.0.7 never say hello; one that hasn't by then is one of those.
+HELLO_GRACE_S = 3.0
 
 
 def _json_error(status: int, message: str) -> web.Response:
@@ -51,6 +59,10 @@ class OverlayServer:
         self.allowed_hosts = {f"{h}:{cfg.port}" for h in ("127.0.0.1", "localhost", "[::1]")}
         self.allowed_origins = {f"http://{h}" for h in self.allowed_hosts} | set(cfg.allowed_origins)
         self.sockets: weakref.WeakSet = weakref.WeakSet()
+        # Who each overlay socket is: "launcher", "hud", or "stale" for a HUD
+        # running old files (None until it says hello).
+        self.roles: weakref.WeakKeyDictionary = weakref.WeakKeyDictionary()
+        self._stale_sent = 0
         # Set by the launcher (the exe): one-click updates and how to quit for one.
         self.updater = None
         self.on_update_ready = None
@@ -64,7 +76,7 @@ class OverlayServer:
         app.on_shutdown.append(self._close_sockets)
         r = app.router
         r.add_get("/", self.index)
-        r.add_get("/overlay/hud", self._static("hud.html"))
+        r.add_get("/overlay/hud", self.hud_page)
         r.add_get("/overlay/hud.js", self._static("hud.js"))
         r.add_get("/overlay/hud.css", self._static("hud.css"))
         r.add_get("/overlay/custom.css", self.custom_css)
@@ -131,22 +143,51 @@ class OverlayServer:
         resp.headers.setdefault("Cache-Control", "no-store")
         return resp
 
-    def _static(self, name: str):
-        path = WEB / name
+    @staticmethod
+    def _csp(name: str) -> str:
         # The HUD shows in the settings page's preview; nothing else may frame a page.
         framers = "'self'" if name == "hud.html" else "'none'"
+        return ("default-src 'self'; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline';"
+                f" connect-src 'self' ws://127.0.0.1:* ws://localhost:*; frame-ancestors {framers}")
+
+    def _static(self, name: str):
+        path = WEB / name
 
         async def handler(_request):
             resp = web.FileResponse(path)
             if name.endswith(".html"):
-                resp.headers["Content-Security-Policy"] = (
-                    "default-src 'self'; img-src 'self' blob: data:; style-src 'self' 'unsafe-inline';"
-                    f" connect-src 'self' ws://127.0.0.1:* ws://localhost:*; frame-ancestors {framers}")
+                resp.headers["Content-Security-Policy"] = self._csp(name)
             return resp
 
         return handler
 
     # -- overlay ---------------------------------------------------------
+    async def hud_page(self, _request):
+        # Stamped with the build, so the page can tell when it's out of date.
+        html = (WEB / "hud.html").read_text(encoding="utf-8")
+        html = html.replace('<html lang="en">', f'<html lang="en" data-build="{HUD_BUILD}">', 1)
+        return web.Response(text=html, content_type="text/html",
+                            headers={"Content-Security-Policy": self._csp("hud.html")})
+
+    @property
+    def stale_huds(self) -> int:
+        """HUDs (OBS Browser sources) still running files from an older version."""
+        return sum(1 for ws in list(self.sockets) if not ws.closed and self.roles.get(ws) == "stale")
+
+    async def _hud_status(self):
+        n = self.stale_huds
+        if n != self._stale_sent:
+            self._stale_sent = n
+            if n:
+                log.info("an overlay in OBS is running an older version; refresh its Browser source")
+            await self._send_all({"kind": "hud_status", "stale": n})
+
+    async def _hello_timeout(self, ws):
+        await asyncio.sleep(HELLO_GRACE_S)
+        if not ws.closed and self.roles.get(ws) is None:
+            self.roles[ws] = "stale"
+            await self._hud_status()
+
     async def custom_css(self, _request):
         path = self.service.config.custom_css_path
         text = path.read_text(encoding="utf-8") if path.exists() else "/* data/overlay.css */\n"
@@ -173,11 +214,29 @@ class OverlayServer:
         ws = web.WebSocketResponse(heartbeat=20)
         await ws.prepare(request)
         self.sockets.add(ws)
+        await ws.send_json({"kind": "hello", "build": HUD_BUILD})
         await ws.send_json({"kind": "state", "state": self.service.state()})
-        async for msg in ws:  # read-only: incoming messages are ignored
+        await ws.send_json({"kind": "hud_status", "stale": self.stale_huds})
+        timer = asyncio.create_task(self._hello_timeout(ws))
+        # Read-only: the only message a page sends is hello, saying what it is.
+        async for msg in ws:
             if msg.type == WSMsgType.ERROR:
                 break
+            if msg.type == WSMsgType.TEXT and self.roles.get(ws) is None:
+                try:
+                    hello = json.loads(msg.data)
+                except ValueError:
+                    continue
+                if isinstance(hello, dict) and hello.get("kind") == "hello":
+                    role = "launcher" if hello.get("role") == "launcher" else "hud"
+                    if role == "hud" and hello.get("build") != HUD_BUILD:
+                        role = "stale"
+                    self.roles[ws] = role
+                    await self._hud_status()
+        timer.cancel()
         self.sockets.discard(ws)
+        self.roles.pop(ws, None)
+        await self._hud_status()
         return ws
 
     async def _close_sockets(self, _app):
@@ -221,6 +280,7 @@ class OverlayServer:
             "obs": {"host": cfg.obs.host, "port": cfg.obs.port, "source": cfg.obs.source,
                     "password_set": bool(cfg.obs.password)},
             "stopped": self.service.stopped,
+            "stale_huds": self.stale_huds,
         })
 
     async def launcher_obs(self, request):

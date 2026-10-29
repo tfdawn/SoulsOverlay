@@ -194,9 +194,12 @@
   let delay = 500;
   function connect() {
     const ws = new WebSocket(`ws://${location.host}/overlay/ws`);
-    ws.onopen = () => { delay = 500; };
+    const build = document.documentElement.dataset.build || "";
+    ws.onopen = () => { delay = 500; ws.send(JSON.stringify({ kind: "hello", role: "hud", build })); };
     ws.onmessage = (m) => {
       const msg = JSON.parse(m.data);
+      // SoulsOverlay was updated while OBS kept this page open: load the new one.
+      if (msg.kind === "hello" && build && msg.build !== build) { location.reload(); return; }
       if (msg.kind === "state") { state = msg.state; render(); }
       else if (msg.kind === "event") onEvent(msg.event);
       else if (msg.kind === "settings") { DCStyle.apply(msg.values); render(); }

@@ -489,8 +489,10 @@
 
   function connectWs() {
     const ws = new WebSocket(`ws://${location.host}/overlay/ws`);
+    ws.onopen = () => ws.send(JSON.stringify({ kind: "hello", role: "launcher" }));
     ws.onmessage = (ev) => {
       const msg = JSON.parse(ev.data);
+      if (msg.kind === "hud_status") $("refresh").hidden = !msg.stale;
       if (msg.kind === "state") {
         const gameChanged = state && state.game.id !== msg.state.game.id;
         state = msg.state;

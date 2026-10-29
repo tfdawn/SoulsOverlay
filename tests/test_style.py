@@ -81,7 +81,8 @@ def test_settings_endpoints(config):
         assert r.status == 400
 
         ws = await client.ws_connect("/overlay/ws")
-        await ws.receive_json()  # the initial state
+        for _ in range(3):  # hello, the initial state and hud_status
+            await ws.receive_json()
         r = await client.post("/api/settings", json={"values": {"hud.pb_color": "#7fd1ff", "hud.size": 1.75}},
                               headers=AUTH)
         assert r.status == 200
