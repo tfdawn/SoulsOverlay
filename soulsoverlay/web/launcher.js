@@ -130,13 +130,20 @@
   }
   // Settings is a small hub: the overlay's look (a page in the browser) and hotkeys.
   const closeSettings = () => { $("settings").hidden = true; };
-  $("open-settings").addEventListener("click", () => { $("settings").hidden = false; $("st-look").focus(); });
+  $("open-settings").addEventListener("click", () => {
+    $("st-autogame").checked = !state || !state.game_detect || state.game_detect.auto_switch;
+    $("settings").hidden = false;
+    $("st-look").focus();
+  });
   $("st-look").addEventListener("click", () => { closeSettings(); $("editor").hidden = false; $("ed-open").focus(); });
   const closeEditor = () => { $("editor").hidden = true; };
   $("ed-open").addEventListener("click", () => { closeEditor(); openPage("settings"); });
   $("ed-cancel").addEventListener("click", closeEditor);
   $("editor").addEventListener("keydown", (e) => { if (e.key === "Escape") closeEditor(); });
   $("st-close").addEventListener("click", closeSettings);
+  $("st-autogame").addEventListener("change", async () => {
+    $("st-autogame").checked = (await api("/api/game_detect", { auto_switch: $("st-autogame").checked })).auto_switch;
+  });
   $("st-tray").addEventListener("change", async () => {
     $("st-tray").checked = (await native.set_pref("close_to_tray", $("st-tray").checked)).close_to_tray;
   });
@@ -392,7 +399,7 @@
       if (!gd.auto_switch) auto = ["Always switch by itself", true];
     } else if (gd && gd.switched_from) {
       title = `Switched to ${state.game.name}`;
-      detail = `It's the game that's running, so its characters and PBs are loaded.`;
+      detail = "Also switched your character profile to match the game currently running.";
       buttons = [button("OK", "primary", () => control("game_notice_ok")),
                  button(`Back to ${gd.switched_from.name}`, "", () => setGame(gd.switched_from.id))];
       auto = ["Don't switch by itself, ask first", false];

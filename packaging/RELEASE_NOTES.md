@@ -1,8 +1,7 @@
-## What's new in 1.0.12
+## What's new in 1.0.13
 
-- **SoulsOverlay switches to the game you're playing.** Start Dark Souls III while SoulsOverlay is set to Elden Ring, and it switches to Dark Souls III and its characters by itself, so your deaths and PBs land in the right place. It asks Steam which game is running (one registry value, `RunningAppID`) and reads nothing else: not your list of programs, and nothing of the game. It never switches mid-fight, the window tells you when it has switched, and **Back to** undoes it.
-- Prefer to choose yourself? Click **Don't switch by itself, ask first** on that notice, and from then on the window only asks *"You're playing Dark Souls III. Switch?"*.
-- Playing on a console through a capture card, or on a second PC? Nothing changes: pick the game in the window as before.
+- **Settings has a "Switch game by itself" option.** Untick it to be asked before SoulsOverlay switches to the game you start from Steam, or tick it again if you turned switching off from the notice.
+- Clearer wording when SoulsOverlay switches game by itself: the notice now says it also switched your character profile to match the game that's running.
 
 ## How to install
 
