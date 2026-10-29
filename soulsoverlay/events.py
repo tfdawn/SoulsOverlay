@@ -5,8 +5,10 @@ published here as an Event. The overlay server is one subscriber; plugins
 listed in config.toml are others. A Twitch chat bot bridge is meant to be a
 plugin that subscribes to this bus; see examples/webhook_forwarder.py.
 
-Event types: death, death_undone, new_pb, kill, boss_engaged, boss_changed,
-boss_reset, phase, game_changed. Every event carries `game`.
+Event types: death, death_undone, new_pb, defeated, defeated_cancel, kill,
+boss_engaged, boss_changed, boss_reset, phase, game_changed. defeated is shown
+when the bar hits 0%; kill follows once it's certain (shown=True), or
+defeated_cancel if YOU DIED came first. Every event carries `game`.
 """
 
 from __future__ import annotations

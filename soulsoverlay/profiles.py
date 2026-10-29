@@ -42,13 +42,20 @@ DEFAULTS: dict = {
     "victory": None,
     "ocr": {"target_height": 56, "text_v_min": 150, "text_s_max": 80, "psm": 7,
             "min_score": 78, "interval_s": 1.0, "interval_matched_s": 5.0,
-            "fast_retry_s": 4.0},
+            "fast_retry_s": 4.0, "watch_interval_s": 0.4},
     "tracking": {
         "attribution_window_s": 15.0,
         "pre_death_window_s": 3.0,
         "disengage_s": 8.0,
         "bar_hide_frames": 2,  # missed frames in a row before the HUD hides
         "kill_threshold_pct": 3.0,
+        # DEFEATED shows once two reads in a row are this low (only trail
+        # left), and the kill is saved after the boss's bar and name have been
+        # off screen this long. A YOU DIED within defeat_alive_s of the boss
+        # last being seen means it survived on a sliver.
+        "defeat_pct": 0.5,
+        "defeat_confirm_s": 1.5,
+        "defeat_alive_s": 0.75,
         "phase_low_pct": 15.0,
         "phase_refill_pct": 80.0,
         "confirm_reads": 2,

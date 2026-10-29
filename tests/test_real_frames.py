@@ -277,3 +277,15 @@ def test_ds2_three_bars(ds2, width):
     pcts = [read_bar(img, s["bar"], ds2.data["bar_colors"]).pct for s in ds2.boss_slots]
     assert pcts == [pytest.approx(51.9, abs=1), pytest.approx(100, abs=1), pytest.approx(100, abs=1)]
     assert ds2.bar_count("Ruin Sentinels") == 3
+
+
+@needs_tesseract
+def test_watch_names_reads_the_name_after_the_bar_empties(er_real):
+    """A boss left on a sliver: the bar looks empty, but its name is still up."""
+    img = damage(er_real, frame("er_morgott_full", 1920), 0, 0)
+    a = Analyzer(er_real)
+    r = a.analyze(img, now=0.0)
+    assert r.slots[0].pct is None and r.slots[0].match is None
+    r = a.analyze(img, now=0.5, watch_names=True)
+    assert r.slots[0].pct is None
+    assert r.slots[0].match and r.slots[0].match.boss == "Morgott, the Omen King"

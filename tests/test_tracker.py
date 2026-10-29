@@ -99,7 +99,74 @@ def test_kill_when_bar_drains_and_vanishes(er):
     seq = [reading(er, i * 0.5, slot(er, boss, max(0.0, 30 - i * 3))) for i in range(12)]
     seq += [reading(er, 6 + i * 0.5) for i in range(20)]
     ev = run(tr, seq)
-    assert kinds(ev, "kill") == [{"boss": boss, "phase": 1}]
+    assert kinds(ev, "kill") == [{"boss": boss, "phase": 1, "shown": True}]
+
+
+def drained(er, boss, until):
+    """Health draining to 0% (trail only) by `until`, two reads a second."""
+    n = int(until * 2)
+    return [reading(er, i * 0.5, slot(er, boss, max(0.0, 30 - 30 * i / (n - 2)))) for i in range(n + 1)]
+
+
+def test_defeated_shows_at_zero_and_kill_follows_when_boss_leaves(er):
+    tr = Tracker(er)
+    boss = "Margit, the Fell Omen"
+    seq = drained(er, boss, 6.0)
+    ev, shown_at = [], None
+    for r in seq:
+        new = tr.update(r)
+        if kinds(new, "defeated"):
+            shown_at = r.t
+        ev += new
+    first_zero = next(r.t for r in seq if r.slots[0].pct == 0.0)
+    assert kinds(ev, "defeated") == [{"boss": boss, "phase": 1}]
+    assert shown_at == first_zero + 0.5  # the second 0% read
+    assert not kinds(ev, "kill")
+    # The bar and name go: saved 1.5s later.
+    ev = run(tr, [reading(er, 6.5), reading(er, 7.0)])
+    assert not kinds(ev, "kill")
+    ev = run(tr, [reading(er, 7.5)])
+    assert kinds(ev, "kill") == [{"boss": boss, "phase": 1, "shown": True}]
+
+
+def test_sliver_left_and_you_died_takes_defeated_back(er):
+    tr = Tracker(er)
+    boss = "Margit, the Fell Omen"
+    run(tr, drained(er, boss, 6.0))
+    # The bar looks empty but the name stays up: the boss is still there.
+    name_only = SlotReading(None, 0.0, boss, er.match_boss(boss))
+    ev = run(tr, [reading(er, 6.5 + i * 0.5, name_only) for i in range(10)])
+    assert not kinds(ev, "kill")
+    ev = run(tr, [reading(er, 11.5, name_only, death=True), reading(er, 12.0, death=True)])
+    assert kinds(ev, "defeated_cancel") == [{"boss": boss}]
+    assert not kinds(ev, "kill")
+    d = kinds(ev, "death")
+    assert len(d) == 1 and d[0]["boss"] == boss and d[0]["pct"] == 0.0
+
+
+def test_dying_after_the_boss_keeps_the_kill(er):
+    tr = Tracker(er)
+    boss = "Margit, the Fell Omen"
+    run(tr, drained(er, boss, 6.0))
+    # Boss gone, and we die a second later (before the kill was saved).
+    ev = run(tr, [reading(er, 6.5), reading(er, 7.0, death=True), reading(er, 7.5, death=True)])
+    assert kinds(ev, "kill") == [{"boss": boss, "phase": 1, "shown": True}]
+    assert not kinds(ev, "defeated_cancel")
+    assert len(kinds(ev, "death")) == 1 and kinds(ev, "death")[0]["boss"] is None
+
+
+def test_health_coming_back_takes_defeated_back(er):
+    tr = Tracker(er)
+    boss = "Margit, the Fell Omen"
+    run(tr, drained(er, boss, 6.0))
+    ev = run(tr, [reading(er, 6.5, slot(er, boss, 12.0)), reading(er, 7.0, slot(er, boss, 12.0))])
+    assert kinds(ev, "defeated_cancel") == [{"boss": boss}]
+
+
+def test_zero_in_an_early_phase_is_not_defeated(er):
+    tr = Tracker(er)
+    ev = run(tr, drained(er, "Malenia, Blade of Miquella", 6.0))
+    assert not kinds(ev, "defeated")
 
 
 def test_walking_away_is_not_a_kill(er):

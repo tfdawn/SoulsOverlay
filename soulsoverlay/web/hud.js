@@ -121,7 +121,7 @@
 
   function callout(kind, sub, hold) {
     if (!bannersOn()) return;
-    // DEFEATED shows after the bar has gone, so it holds the HUD up while it
+    // DEFEATED can outlast the bar, so it holds the HUD up while it
     // plays. NEW PB sits on the bar and leaves with it.
     if (hold) {
       holdUntil = Date.now() + slow(4500);  // the length of the callout animation
@@ -176,9 +176,18 @@
       lastAttemptCelebrated = true;
       celebrate(ev.pct, ev.phase);
     }
-    if (ev.type === "kill" && ev.first_kill) {
-      const d = state && state.boss ? state.boss.deaths : null;
+    // DEFEATED goes up the moment the bar hits 0% ("defeated"); the kill
+    // itself is only saved a moment later, once the boss has left the screen.
+    if ((ev.type === "defeated" || (ev.type === "kill" && !ev.shown)) && ev.first_kill) {
+      const d = ev.boss_deaths != null ? ev.boss_deaths : state && state.boss ? state.boss.deaths : null;
       callout("kill", d != null ? `after ${d} death${d === 1 ? "" : "s"}` : "", true);
+    }
+    if (ev.type === "defeated_cancel" && calloutKind === "kill") {
+      // YOU DIED with the boss still on screen: it had a sliver left.
+      $("callout").classList.remove("show");
+      calloutKind = "";
+      holdUntil = 0;
+      setVisible(always() || barUp);
     }
   }
 
@@ -233,9 +242,9 @@
     }
     if (demo === "kill") {
       if (scene) Object.assign(state.boss, { live_pct: 9, pb: { phase: 1, pct: 6.2, killed: false } });
-      later(300, () => { state.boss.live_pct = 0; render(); });
-      later(900, () => { state.boss.bar_up = false; state.boss.engaged = false; render();
-        onEvent({ type: "kill", first_kill: true }); });
+      later(300, () => { state.boss.live_pct = 0; render(); onEvent({ type: "defeated", first_kill: true }); });
+      later(900, () => { state.boss.bar_up = false; state.boss.engaged = false; render(); });
+      later(1800, () => onEvent({ type: "kill", first_kill: true, shown: true }));
     }
     if (demo === "death") {
       // As in game: the counter spots YOU DIED as it fades in, and the bar

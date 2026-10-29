@@ -72,7 +72,11 @@ class Analyzer:
         self._ocr_cache: list[tuple[float, bool, str]] = [(0.0, False, "")] * len(p.boss_slots)
         self._appeared: list[float | None] = [None] * len(p.boss_slots)
 
-    def analyze(self, frame: np.ndarray, now: float | None = None, force_ocr: bool = False) -> FrameReading:
+    def analyze(self, frame: np.ndarray, now: float | None = None, force_ocr: bool = False,
+                watch_names: bool = False) -> FrameReading:
+        """watch_names: keep reading the name strips after their bars go, to
+        tell a dead boss (name gone too) from one left on a sliver of health
+        the bar can't show (name still up)."""
         now = time.monotonic() if now is None else now
         p = self.profile
         is_death, death_score = self.death.detect(frame)
@@ -107,6 +111,11 @@ class Analyzer:
             if visible and (force_ocr or (due and not is_death)):
                 text = bossname.read_name(frame, slot.get("name"), p.data["ocr"])
                 self._ocr_cache[i] = (now, True, text)
+            elif not visible and watch_names and not is_death:
+                if now - last_t >= ocr["watch_interval_s"] or last_visible:
+                    text = bossname.read_name(frame, slot.get("name"), p.data["ocr"])
+                    self._ocr_cache[i] = (now, False, text)
+                self._appeared[i] = None
             elif not visible:
                 text = ""
                 self._ocr_cache[i] = (now, False, "")

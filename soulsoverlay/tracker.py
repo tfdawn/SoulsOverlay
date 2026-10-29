@@ -9,7 +9,10 @@ Event types it emits:
     phase       {boss, phase}
     live        {boss, phase, pct}           smoothed health, for the overlay
     death       {boss|None, phase, pct}      pct is health just before death
-    kill        {boss, phase}
+    defeated    {boss, phase}                the bar hit 0%: show DEFEATED now
+    defeated_cancel {boss}                   ...but YOU DIED came while the boss
+                                             was still on screen (a sliver left)
+    kill        {boss, phase, shown}         shown: DEFEATED is already up
     disengage   {boss}
 """
 
@@ -33,6 +36,11 @@ class Encounter:
     readings: deque = field(default_factory=lambda: deque(maxlen=120))  # (t, phase, pct)
     max_visible_bars: int = 0
     refill_count: int = 0
+    # Set when the bar hits 0%. The kill is only saved once the boss's bar
+    # and name have left the screen; until then a YOU DIED means a sliver of
+    # health was left that the bar couldn't show.
+    defeated_at: float | None = None
+    still_there: float = 0.0  # last time its bar or name was on screen
 
     def recent(self, n: int = 3) -> float | None:
         vals = [p for _, ph, p in list(self.readings)[-n:] if ph == self.phase]
@@ -63,6 +71,12 @@ class Tracker:
     @property
     def cfg(self) -> dict:
         return self.profile.data["tracking"]
+
+    @property
+    def defeat_pending(self) -> bool:
+        """DEFEATED is up but not confirmed: the analyzer should keep reading
+        the name strip after the bar goes."""
+        return self.encounter is not None and self.encounter.defeated_at is not None
 
     @property
     def display_boss(self) -> str | None:
@@ -117,6 +131,9 @@ class Tracker:
         enc = self.encounter
         if enc is not None:
             self._update_health(enc, r, now, events)
+            if enc.defeated_at is not None and (
+                    enc.last_seen == now or any(s.match and s.match.boss == enc.boss for s in r.slots)):
+                enc.still_there = now
         self._update_bar_up(enc, r, now, events)
 
         # 2. death banner
@@ -141,13 +158,23 @@ class Tracker:
             fire = False
         if fire:
             self._last_death_t = now
+            enc = self.encounter
+            if enc is not None and enc.defeated_at is not None:
+                if now - enc.still_there > cfg["defeat_alive_s"]:
+                    # The boss had already gone when we died: it still counts.
+                    events.append(("kill", {"boss": enc.boss, "phase": enc.phase, "shown": True}))
+                    self.encounter = None
+                else:
+                    events.append(("defeated_cancel", {"boss": enc.boss}))
             events.append(("death", self._death_payload(now)))
             if self.encounter:
                 self._killed_by = self.encounter.boss
                 self.encounter = None
             return events
 
-        # 3. victory banner, or the bar draining and vanishing
+        # 3. the bar hitting 0%, a victory banner, or the bar vanishing low
+        if enc is not None and self._defeat(enc, r, now, events):
+            return events
         if enc is not None:
             if r.victory:
                 self._victory_streak += 1
@@ -177,6 +204,30 @@ class Tracker:
         return events
 
     # -- helpers ---------------------------------------------------------
+    def _defeat(self, enc: Encounter, r: FrameReading, now: float, events) -> bool:
+        """DEFEATED as soon as the bar reads 0%, saved as a kill once the boss
+        has left the screen. True while that is in hand."""
+        cfg = self.cfg
+        max_ph = self.profile.max_phases(enc.boss)
+        if max_ph is not None and enc.phase < max_ph:
+            return False
+        last = [p for _, ph, p in list(enc.readings)[-2:] if ph == enc.phase]
+        if enc.defeated_at is None:
+            if len(last) == 2 and max(last) <= cfg["defeat_pct"] and enc.last_seen == now:
+                enc.defeated_at = enc.still_there = now
+                events.append(("defeated", {"boss": enc.boss, "phase": enc.phase}))
+                return True
+            return False
+        if enc.last_seen == now and last and min(last) > cfg["kill_threshold_pct"]:
+            # Health showing again (a heal, or a bad read): not dead after all.
+            enc.defeated_at = None
+            events.append(("defeated_cancel", {"boss": enc.boss}))
+            return False
+        if enc.still_there != now and now - enc.still_there >= cfg["defeat_confirm_s"]:
+            events.append(("kill", {"boss": enc.boss, "phase": enc.phase, "shown": True}))
+            self.encounter = None
+        return True
+
     def _update_bar_up(self, enc: Encounter | None, r: FrameReading, now: float, events):
         """Follow the game's bar closely so the HUD can come and go with it.
         After a death the bar may linger under "YOU DIED" or vanish at once;

@@ -202,7 +202,9 @@ start of the name strip, for games whose names sit on bright, busy floors.
 ## Events and the chat bot hook
 
 Every state change is published on an internal event bus: `death`, `death_undone`, `new_pb`,
-`kill`, `boss_engaged`, `boss_changed`, `boss_reset`, `phase` and `game_changed`. A plugin is
+`defeated`, `defeated_cancel`, `kill`, `boss_engaged`, `boss_changed`, `boss_reset`, `phase` and
+`game_changed`. `defeated` fires the moment a boss's bar hits 0%; `kill` follows once its bar and
+name have left the screen, or `defeated_cancel` if YOU DIED came first (a sliver was left). A plugin is
 a Python module with `setup(bus, store, config)`, listed under `plugins` in `config.toml`.
 `examples/webhook_forwarder.py` forwards events to a bot on a VPS as outbound, HMAC-signed
 HTTPS requests, so nothing on your PC has to be reachable from the internet.

@@ -131,9 +131,15 @@ class Service:
             elif kind == "death":
                 await self._death(data["boss"], data["phase"], data["pct"], data.get("source", "auto"))
                 changed = True
+            elif kind == "defeated":
+                stats = self.store.boss_stats(game, data["boss"])
+                await self.bus.publish(Event("defeated", {
+                    "game": game, **data, "first_kill": not stats["killed"], "boss_deaths": stats["deaths"]}))
+            elif kind == "defeated_cancel":
+                await self.bus.publish(Event("defeated_cancel", {"game": game, **data}))
             elif kind == "kill":
                 result = self.store.record_kill(game, data["boss"], data["phase"])
-                await self.bus.publish(Event("kill", {"game": game, **result}))
+                await self.bus.publish(Event("kill", {"game": game, **result, "shown": data.get("shown", False)}))
                 self.live = None
                 changed = True
             elif kind == "disengage":
@@ -360,7 +366,8 @@ class Service:
                 await self._notify()
             try:
                 t_an = time.monotonic()
-                reading = await asyncio.to_thread(self.analyzer.analyze, frame)
+                reading = await asyncio.to_thread(self.analyzer.analyze, frame,
+                                                    watch_names=self.tracker.defeat_pending)
                 t_an = time.monotonic() - t_an
             except bossname.OcrUnavailable as e:
                 self.status["ocr"] = f"unavailable: {e}"
