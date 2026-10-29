@@ -357,3 +357,27 @@ def test_the_picked_game_is_remembered(config, tmp_path):
         assert 'password = "pw"' in text
 
     with_client(config, body=body)
+
+
+def test_switching_to_a_look_alike_boss(config):
+    """The window offers the other Smelter Demon, and picking it moves the
+    boss on screen (and the next deaths) over to it."""
+    async def control(client, command, **args):
+        return await client.post("/api/control", json={"command": command, "args": args}, headers=AUTH)
+
+    async def body(client, service):
+        await control(client, "game_set", game="dark_souls_2")
+        await control(client, "boss_set", boss="Smelter Demon")
+        boss = (await (await client.get("/api/state")).json())["boss"]
+        assert boss["name"] == "Smelter Demon"
+        assert boss["look_alike"] == {"name": "Blue Smelter Demon", "experimental": True}
+        assert (await control(client, "boss_variant", boss="Velstadt")).status == 400
+        assert (await control(client, "boss_variant", boss="Blue Smelter Demon")).status == 200
+        boss = (await (await client.get("/api/state")).json())["boss"]
+        assert boss["name"] == "Blue Smelter Demon"
+        assert boss["look_alike"] == {"name": "Smelter Demon", "experimental": True}
+        await control(client, "death_add")
+        assert service.store.boss_stats("dark_souls_2", "Blue Smelter Demon")["deaths"] == 1
+        assert service.store.boss_stats("dark_souls_2", "Smelter Demon")["deaths"] == 0
+
+    with_client(config, body=body)

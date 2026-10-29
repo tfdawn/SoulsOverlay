@@ -365,3 +365,62 @@ def test_long_cutscene_between_phases(profiles_dir):
     assert not kinds(ev, "defeated") and not kinds(ev, "disengage")
     assert [p["phase"] for p in kinds(ev, "phase")] == [2]
     assert kinds(ev, "death")[0]["phase"] == 2
+
+
+def _ds2_reading(ds2, t, *slots, death=False):
+    s = list(slots) + [SlotReading(None, 0, "", None)] * (3 - len(slots))
+    return FrameReading(t, death, 1.0 if death else 0.0, False, 0.0, s)
+
+
+def test_two_dragonrider_bars_are_the_twin_dragonriders(profiles_dir):
+    """Both twins' bars say "Dragonrider" from the start; one bar is the
+    Heide's Tower Dragonrider. When one twin falls, the fight stays the twins'."""
+    from soulsoverlay.profiles import load_profile
+
+    ds2 = load_profile(profiles_dir, "dark_souls_2")
+    dr = "Dragonrider"
+    ev = run(Tracker(ds2), [_ds2_reading(ds2, t * 0.5, slot(ds2, dr, 100)) for t in range(4)])
+    assert kinds(ev, "engage")[0]["boss"] == "Dragonrider"
+    tr = Tracker(ds2)
+    seq = [_ds2_reading(ds2, t * 0.5, slot(ds2, dr, 100 - t), slot(ds2, dr, 100)) for t in range(4)]
+    seq += [_ds2_reading(ds2, 2 + t * 0.5, slot(ds2, dr, 60)) for t in range(4)]  # one twin falls
+    seq += [_ds2_reading(ds2, 4, slot(ds2, dr, 60), death=True), _ds2_reading(ds2, 4.5, death=True)]
+    ev = run(tr, seq)
+    assert [e["boss"] for e in kinds(ev, "engage")] == ["Twin Dragonriders"]
+    assert kinds(ev, "death")[0]["boss"] == "Twin Dragonriders"
+    assert kinds(ev, "death")[0]["pct"] == pytest.approx(30, abs=1)
+
+
+def test_smelter_demon_after_the_iron_keep_one_is_beaten(profiles_dir):
+    """Experimental: the blue Smelter Demon's bar also says "Smelter Demon".
+    Until the Iron Keep one is beaten that's who it is; after, it's the blue one,
+    unless the user has said otherwise."""
+    from soulsoverlay.profiles import load_profile
+
+    ds2 = load_profile(profiles_dir, "dark_souls_2")
+    sd = "Smelter Demon"
+    fight = [_ds2_reading(ds2, t * 0.5, slot(ds2, sd, 100)) for t in range(4)]
+    tr = Tracker(ds2)
+    assert kinds(run(tr, fight), "engage")[0]["boss"] == "Smelter Demon"
+    tr = Tracker(ds2)
+    tr.beaten = lambda boss: boss == "Smelter Demon"
+    assert kinds(run(tr, fight), "engage")[0]["boss"] == "Blue Smelter Demon"
+    # Wrong guess (say, a new game on the same character): the user switches.
+    tr.choose_variant("Smelter Demon")
+    assert tr.encounter.boss == "Smelter Demon" and tr.display_boss == "Smelter Demon"
+    tr.encounter = None
+    later = [_ds2_reading(ds2, 10 + t * 0.5, slot(ds2, sd, 100)) for t in range(4)]
+    assert kinds(run(tr, later), "engage")[0]["boss"] == "Smelter Demon"
+
+
+def test_look_alikes_in_the_profile(profiles_dir):
+    from soulsoverlay.profiles import load_profile
+
+    ds2 = load_profile(profiles_dir, "dark_souls_2")
+    assert ds2.look_alike_of("Smelter Demon") == "Blue Smelter Demon"
+    assert ds2.look_alike_of("Blue Smelter Demon") == "Smelter Demon"
+    assert ds2.look_alike_of("Twin Dragonriders") == "Dragonrider"
+    assert ds2.look_alike_of("Velstadt, the Royal Aegis") is None
+    # The bar names match the base boss; the look-alike is only ever a guess on top.
+    assert ds2.match_boss("Smelter Demon").boss == "Smelter Demon"
+    assert ds2.match_boss("Dragonrider").boss == "Dragonrider"

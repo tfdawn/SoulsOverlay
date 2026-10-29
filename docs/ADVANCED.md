@@ -200,6 +200,8 @@ Profiles are JSON files in `profiles/`. The boss list is where most of the tunin
 ```
 
 * `aliases` are other names that mean the same fight.
+* `shown_as` is the name the game prints for a boss that shares another boss's bar name. The
+  window offers a switch between the two, and `"experimental": true` labels it as a guess.
 * `phase_names` are names that only appear in a later phase.
 * `phases` tells the tracker that a bar emptying at the end of phase 1 isn't a kill.
 * `bars: 2` averages both bars in phase 1, then tracks the survivor in phase 2.
@@ -253,8 +255,11 @@ HTTPS requests, so nothing on your PC has to be reachable from the internet.
   second boss slot was measured from one screenshot. Of its multi-phase fights, only the Abyss
   Watchers' phase change (a long cutscene) has been checked on footage.
 * In Dark Souls II, both Twin Dragonriders bars are labelled "Dragonrider", and the DLC's blue
-  Smelter Demon is labelled "Smelter Demon", so those fights count as the Dragonrider and the
-  Smelter Demon. Use `boss_set` to keep them apart.
+  Smelter Demon is labelled "Smelter Demon". Two "Dragonrider" bars at once are the Twin
+  Dragonriders. The Smelter Demon is a guess (experimental): once the Iron Keep one is beaten on
+  the current character, a "Smelter Demon" fight counts as the blue one. Fighting the Iron Keep
+  one again on that character (NG+, say) or the blue one first gets it wrong; the button under the
+  boss in the SoulsOverlay window switches to the other one until you close SoulsOverlay.
 * The Elden Ring preset has one boss slot. Two-bar fights need a second slot, added on the
   calibration page.
 * OCR depends on Tesseract and a reasonably clean name strip. If a name won't read, use

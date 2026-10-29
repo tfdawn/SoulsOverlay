@@ -67,6 +67,11 @@ class Tracker:
         # fight that just ended, so the boss can't be engaged again until its
         # bar has gone away once.
         self._killed_by: str | None = None
+        # Bosses that share a bar name (see Profile.shown_as). `beaten` says
+        # whether a boss has been killed on this character; `variant_choice`
+        # holds the user's pick when the guess was wrong.
+        self.beaten = lambda boss: False
+        self.variant_choice: dict[str, str] = {}
 
     @property
     def cfg(self) -> dict:
@@ -83,6 +88,49 @@ class Tracker:
         if self.encounter:
             return self.encounter.boss
         return self.pinned_boss or self.last_boss
+
+    # -- bosses that share a bar name ------------------------------------
+    def _names(self, s, boss: str) -> bool:
+        """The slot's name strip reads as this boss (or the name it goes by)."""
+        return bool(s.match) and s.match.boss in (boss, self.profile.shown_as(boss))
+
+    def _resolve(self, matched: list) -> str:
+        """Which boss the name on screen means. Dark Souls II gives two pairs
+        of bosses one name: the Twin Dragonriders show two "Dragonrider" bars
+        from the start, and the blue Smelter Demon is taken to be the one met
+        once the Iron Keep one is beaten (experimental). The user's own pick
+        wins, and a fight keeps its boss when one of the twins falls."""
+        name = matched[0].match.boss
+        alikes = self.profile.look_alikes(name)
+        if not alikes:
+            return name
+        enc = self.encounter
+        if enc is not None and enc.boss in alikes:
+            return enc.boss
+        same = sum(1 for s in matched if s.match.boss == name)
+        for alike in alikes:
+            if self.profile.bar_count(alike) > 1 and same > 1:
+                return alike
+        if name in self.variant_choice:
+            return self.variant_choice[name]
+        for alike in alikes:
+            if self.profile.bar_count(alike) == 1 and self.beaten(name):
+                return alike
+        return name
+
+    def choose_variant(self, boss: str):
+        """The user says the boss on screen is `boss`, one of a same-name pair."""
+        base = self.profile.shown_as(boss)
+        self.variant_choice[base] = boss
+        enc = self.encounter
+        if enc is not None and self.profile.shown_as(enc.boss) == base:
+            enc.boss = boss
+        if self.pinned_boss and self.profile.shown_as(self.pinned_boss) == base:
+            self.pinned_boss = boss
+        if self.last_boss and self.profile.shown_as(self.last_boss) == base:
+            self.last_boss = boss
+        if self._killed_by and self.profile.shown_as(self._killed_by) == base:
+            self._killed_by = boss
 
     # -- manual controls -------------------------------------------------
     def pin_boss(self, boss: str | None):
@@ -108,7 +156,7 @@ class Tracker:
         matched = [s for s in r.slots if s.match is not None]
         boss_now = None
         if matched:
-            boss_now = matched[0].match.boss
+            boss_now = self._resolve(matched)
             if self._candidate and self._candidate[0] == boss_now:
                 self._candidate = (boss_now, self._candidate[1] + 1)
             else:
@@ -132,7 +180,7 @@ class Tracker:
         if enc is not None:
             self._update_health(enc, r, now, events)
             if enc.defeated_at is not None and (
-                    enc.last_seen == now or any(s.match and s.match.boss == enc.boss for s in r.slots)):
+                    enc.last_seen == now or any(self._names(s, enc.boss) for s in r.slots)):
                 enc.still_there = now
         self._update_bar_up(enc, r, now, events)
 
@@ -274,12 +322,12 @@ class Tracker:
             return
         # Only trust bars when the name strip belongs to this encounter (or
         # could not be read this frame, which happens on busy backgrounds).
-        if any(s.match and s.match.boss != enc.boss for s in visible):
+        if any(s.match and not self._names(s, enc.boss) for s in visible):
             return
         # Back from a long gap (a cutscene between phases): cutscenes are full
         # of fire and blood that can pass for a bar, so wait for the name.
         if now - enc.last_seen > cfg["disengage_s"] and not any(
-                s.match and s.match.boss == enc.boss for s in visible):
+                self._names(s, enc.boss) for s in visible):
             return
         enc.last_seen = now
         for s in visible:

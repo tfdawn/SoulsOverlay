@@ -160,7 +160,8 @@
     },
     {
       "name": "Twin Dragonriders",
-      "bars": 2
+      "bars": 2,
+      "shown_as": "Dragonrider"
     },
     {
       "name": "Darklurker"
@@ -204,7 +205,9 @@
       "name": "Sir Alonne"
     },
     {
-      "name": "Blue Smelter Demon"
+      "name": "Blue Smelter Demon",
+      "shown_as": "Smelter Demon",
+      "experimental": true
     },
     {
       "name": "Aava, the King's Pet"

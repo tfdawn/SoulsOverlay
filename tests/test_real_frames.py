@@ -464,3 +464,19 @@ def test_defeated_on_real_frames(game, low_shot, trail_shot, boss, died):
     ev = play([src] * 3 + [zero] * 3 + [gone] * 8 + [_without_boss(profile, frame(died, 1920))] * 3)
     kinds = [k for _, k, _ in ev if k in ("defeated", "kill", "defeated_cancel", "death")]
     assert kinds == ["defeated", "kill", "death"]
+
+
+@needs_tesseract
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+def test_ds2_twin_dragonriders(ds2, width):
+    """Both twins' bars read "Dragonrider" from the start: two of them engage
+    the Twin Dragonriders, not the Heide's Tower Dragonrider."""
+    from soulsoverlay.tracker import Tracker
+
+    img = frame("ds2_twin_dragonriders", width)
+    a, tr = Analyzer(ds2), Tracker(ds2)
+    events = []
+    for t in range(3):
+        events += tr.update(a.analyze(img, now=t * 0.2, force_ocr=True))
+    assert [d["boss"] for k, d in events if k == "engage"] == ["Twin Dragonriders"]
+    assert tr.encounter.boss == "Twin Dragonriders"

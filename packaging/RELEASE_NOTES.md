@@ -1,7 +1,8 @@
-## What's new in 1.0.13
+## What's new in 1.0.14
 
-- **Settings has an "Auto-switch game" option.** Untick it to be asked before SoulsOverlay switches to the game you start from Steam, or tick it again if you turned switching off from the notice.
-- Clearer wording when SoulsOverlay switches game by itself: the notice now says it also switched your character profile to match the game that's running.
+- **Dark Souls II: Twin Dragonriders** now count as their own fight. Their two health bars both say "Dragonrider", which is how SoulsOverlay tells them from the Heide's Tower Dragonrider.
+- **Dark Souls II: blue Smelter Demon (experimental).** Its bar also just says "Smelter Demon", so SoulsOverlay guesses: once you've beaten the Iron Keep Smelter Demon on a character, the next one counts as the blue one.
+- When the boss shares its name with another, the SoulsOverlay window shows a button to switch to the other one if the guess is wrong.
 
 ## How to install
 

@@ -81,6 +81,22 @@
       const pb = boss.pb;
       $("boss-pb").textContent = !pb ? "–" : pb.killed ? "defeated" : `${pb.pct}%`;
     }
+    // Dark Souls II names two pairs of bosses the same; let the user fix a wrong guess.
+    const alike = boss && boss.look_alike;
+    $("boss-lookalike").hidden = !alike;
+    if (alike) {
+      const text = $("lookalike-text");
+      text.replaceChildren();
+      if (alike.experimental) {
+        const tag = document.createElement("span");
+        tag.className = "tag";
+        tag.textContent = "Experimental";
+        text.append(tag);
+      }
+      text.append(`Shares its name with ${alike.name}.`);
+      $("lookalike-switch").textContent = `It's ${alike.name}`;
+      $("lookalike-switch").onclick = () => control("boss_variant", { boss: alike.name });
+    }
     // Show the OBS form by itself on the first start and when the details look wrong.
     const wrongDetails = bad && !/Can't reach OBS/.test(title);
     $("connect").hidden = !(connectOpen || (info && info.setup_needed) || wrongDetails);

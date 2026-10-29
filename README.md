@@ -61,9 +61,11 @@ Your deaths and PB show up the next time a boss health bar is on screen.
 - **Elden Ring**
 - **Dark Souls Remastered**
 - **Dark Souls II: Scholar of the First Sin**, including the DLCs
-  - ⚠️ It can't yet tell the **Twin Dragonriders** from the Heide's Tower **Dragonrider**, or the
-    DLC's **blue Smelter Demon** from the Iron Keep one, because the game gives them the same name.
-    Those fights share their deaths and PB.
+  - 🧪 **Experimental:** the game calls the DLC's **blue Smelter Demon** just "Smelter Demon", so
+    SoulsOverlay guesses: once you've beaten the Iron Keep one on that character, the next one is
+    taken to be the blue one. If it guesses wrong, click **It's Smelter Demon** (or **It's Blue
+    Smelter Demon**) in the SoulsOverlay window. The **Twin Dragonriders** are told apart from the
+    Heide's Tower Dragonrider by their two health bars.
 - **Dark Souls III**
 
 > **Ultrawide?** The presets are tested at 16:9 (2560x1440, 1920x1080 and 1280x720). On other

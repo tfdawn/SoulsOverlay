@@ -1,3 +1,3 @@
 """Automatic death counter and boss PB overlay for OBS."""
 
-__version__ = "1.0.13"
+__version__ = "1.0.14"

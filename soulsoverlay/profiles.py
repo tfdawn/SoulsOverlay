@@ -129,6 +129,23 @@ class Profile:
     def bar_count(self, name: str) -> int:
         return int(self.boss_info(name).get("bars", 1))
 
+    def shown_as(self, name: str) -> str:
+        """The name the game prints on this boss's bar. Usually its own, but
+        Dark Souls II labels the Twin Dragonriders "Dragonrider" and the DLC's
+        blue Smelter Demon "Smelter Demon"."""
+        return self.boss_info(name).get("shown_as", name)
+
+    def look_alikes(self, name: str) -> list[str]:
+        """Other bosses whose bars carry this boss's name."""
+        return [b["name"] for b in self.data["bosses"] if b.get("shown_as") == name]
+
+    def look_alike_of(self, name: str) -> str | None:
+        """The boss this one can be mistaken for, either way round."""
+        if self.shown_as(name) != name:
+            return self.shown_as(name)
+        alikes = self.look_alikes(name)
+        return alikes[0] if alikes else None
+
     def asset_path(self, rel: str | None) -> Path | None:
         if not rel:
             return None

@@ -53,7 +53,14 @@ main { flex: 1; padding: 18px 20px 14px; overflow-y: auto; }
 .dot.warn { background: var(--warn); box-shadow: 0 0 8px var(--warn); }
 .dot.bad { background: var(--bad); box-shadow: 0 0 8px var(--bad); }
 
-.boss { display: flex; justify-content: space-between; gap: 10px; font-size: 13px; color: var(--muted); padding: 8px 12px; }
+.boss { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 10px; font-size: 13px; color: var(--muted); padding: 8px 12px; }
+.boss .lookalike { flex-basis: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding-top: 6px; border-top: 1px solid var(--line); font-size: 12px; }
+.boss .lookalike[hidden] { display: none; }
+.boss .lookalike span:first-child { white-space: normal; overflow: visible; }
+.boss .lookalike button { flex: none; font-size: 12px; padding: 3px 9px; }
+.tag { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  padding: 1px 5px; margin-right: 6px; border-radius: 4px; color: var(--bg); background: var(--accent); }
 .boss b { color: var(--fg); font-weight: 600; }
 .boss span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .boss span:last-child { white-space: nowrap; }

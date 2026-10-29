@@ -23,8 +23,8 @@ from .tracker import Tracker
 
 log = logging.getLogger(__name__)
 
-CONTROL_COMMANDS = ("death_add", "death_undo", "boss_reset", "boss_set", "boss_clear", "game_set",
-                    "character_set", "character_add", "character_rename", "character_delete",
+CONTROL_COMMANDS = ("death_add", "death_undo", "boss_reset", "boss_set", "boss_clear", "boss_variant",
+                    "game_set", "character_set", "character_add", "character_rename", "character_delete",
                     "snapshot", "start", "stop", "game_keep", "game_notice_ok")
 
 
@@ -63,9 +63,14 @@ class Service:
         self.profile: Profile = load_profile(self.config.profiles_dir, game_id)
         self.analyzer = Analyzer(self.profile)
         self.tracker = Tracker(self.profile)
+        self.tracker.beaten = self._beaten
         self.live = None
         self.store.ensure_game(self.profile.id, self.profile.name)
         self.status["detector"] = self.analyzer.death.mode
+
+    def _beaten(self, boss: str) -> bool:
+        pb = self.store.pb(self.profile.id, boss)
+        return bool(pb and pb.get("killed"))
 
     def reload_profile(self):
         """Pick up a saved calibration without losing the current fight."""
@@ -162,6 +167,15 @@ class Service:
                 "bar_up": engaged and self.tracker.bar_up,
                 "pinned": self.tracker.pinned_boss == boss_name,
             })
+            # Dark Souls II gives some bosses the same name: offer a one-click
+            # switch to the other one when the guess was wrong.
+            alike = self.profile.look_alike_of(boss_name)
+            if alike:
+                boss["look_alike"] = {
+                    "name": alike,
+                    "experimental": any(self.profile.boss_info(b).get("experimental")
+                                        for b in (boss_name, alike)),
+                }
         return {
             "game": {"id": game, "name": self.profile.name, **self.store.game_stats(game)},
             "characters": self.store.characters(game),
@@ -258,6 +272,14 @@ class Service:
             match = self.profile.match_boss(name)
             boss = match.boss if match else name
             self.tracker.pin_boss(boss)
+            result["boss"] = boss
+            await self.bus.publish(Event("boss_changed", {"game": game, "boss": boss, "manual": True}))
+        elif command == "boss_variant":
+            boss = str(args.get("boss", "")).strip()
+            current = self.tracker.display_boss
+            if not current or boss != self.profile.look_alike_of(current):
+                raise ValueError(f"{boss!r} isn't the look-alike of the boss on screen")
+            self.tracker.choose_variant(boss)
             result["boss"] = boss
             await self.bus.publish(Event("boss_changed", {"game": game, "boss": boss, "manual": True}))
         elif command == "boss_clear":
