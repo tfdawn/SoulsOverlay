@@ -192,7 +192,8 @@ Profiles are JSON files in `profiles/`. The boss list is where most of the tunin
 * `bars` without `phases` (Dark Souls II's Ruin Sentinels, `bars: 3`) keeps one average for the
   whole fight: a bar that hasn't appeared yet counts as full, and a fallen one as empty.
 
-For other games, start from `profiles/generic.json`. It has
+For other games, copy `profiles/generic.json` to a new file and give it its own `id` and `name`
+(the generic profile itself isn't shown in the game list). It has
 `tracking.accept_unlisted = true`, so any stable OCR'd name is used even if it isn't in the
 boss list. Bar and death colours can be tuned under `bar_colors` and `death.heuristic` (OpenCV
 HSV ranges). An optional `bar_colors.empty` colour (the drained part of the bar) stops scenery

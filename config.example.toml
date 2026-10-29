@@ -1,7 +1,7 @@
 # Copy to config.toml and fill in the OBS password.
 
-# Which profile in profiles/ to use: elden_ring, dark_souls_3,
-# dark_souls_remastered, generic. Can be switched live from the calibration page.
+# Which profile in profiles/ to use: elden_ring, dark_souls_remastered,
+# dark_souls_2 or dark_souls_3. Pick the game in SoulsOverlay's window.
 game = "elden_ring"
 
 # Where the database, control token and your overlay.css live.

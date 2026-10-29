@@ -114,7 +114,7 @@ def test_game_list_puts_elden_ring_first():
     from soulsoverlay.profiles import list_profiles
 
     games = list_profiles(Path(__file__).resolve().parents[1] / "profiles")
-    assert [g["id"] for g in games] == ["elden_ring", "dark_souls_remastered", "dark_souls_2", "dark_souls_3", "generic"]
+    assert [g["id"] for g in games] == ["elden_ring", "dark_souls_remastered", "dark_souls_2", "dark_souls_3"]
     names = {g["id"]: g["name"] for g in games}
     assert names["dark_souls_3"] == "Dark Souls III" and not any(g["wip"] for g in games)
 

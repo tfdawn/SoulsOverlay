@@ -228,6 +228,8 @@ def load_profile(profiles_dir: Path, game_id: str) -> Profile:
 # A game whose preset hasn't been checked in game yet goes in WIP.
 ORDER = ("elden_ring", "dark_souls_remastered", "dark_souls_2", "dark_souls_3")
 WIP: set[str] = set()
+# Shipped as a starting point for other games, but not offered in the game list.
+HIDDEN = {"generic"}
 
 
 def list_profiles(profiles_dir: Path) -> list[dict]:
@@ -240,8 +242,10 @@ def list_profiles(profiles_dir: Path) -> list[dict]:
         except (OSError, json.JSONDecodeError):
             continue
         gid = data.get("id", p.stem)
+        if gid in HIDDEN:
+            continue
         name = data.get("name", p.stem)
         out.append({"id": gid, "name": f"{name} (WiP)" if gid in WIP else name, "game": name, "wip": gid in WIP})
-    # Then any other profiles in file order, with "generic" (calibrate it yourself) last.
-    out.sort(key=lambda g: (ORDER.index(g["id"]) if g["id"] in ORDER else len(ORDER), g["id"] == "generic"))
+    # Then any other profiles in file order.
+    out.sort(key=lambda g: ORDER.index(g["id"]) if g["id"] in ORDER else len(ORDER))
     return out
