@@ -129,6 +129,31 @@ def test_defeated_shows_at_zero_and_kill_follows_when_boss_leaves(er):
     assert kinds(ev, "kill") == [{"boss": boss, "phase": 1, "shown": True}]
 
 
+def test_defeated_when_the_bar_vanishes_nearly_empty(er):
+    """Elden Ring can drop the bar before it's ever read empty."""
+    tr = Tracker(er)
+    boss = "Margit, the Fell Omen"
+    seq = [reading(er, i * 0.1, slot(er, boss, max(2.0, 30 - i * 3))) for i in range(12)]
+    ev = run(tr, seq)
+    assert not kinds(ev, "defeated")
+    ev = run(tr, [reading(er, 1.2)])
+    assert not kinds(ev, "defeated")  # one missed frame could be a bad read
+    ev = run(tr, [reading(er, 1.3)])
+    assert kinds(ev, "defeated") == [{"boss": boss, "phase": 1}]
+    ev = run(tr, [reading(er, 1.4 + i * 0.1) for i in range(14)])
+    assert kinds(ev, "kill") == [{"boss": boss, "phase": 1, "shown": True}]
+
+
+def test_bar_going_as_you_die_is_not_defeated(er):
+    tr = Tracker(er)
+    boss = "Margit, the Fell Omen"
+    run(tr, [reading(er, i * 0.1, slot(er, boss, 2.0)) for i in range(5)])
+    faint = FrameReading(0.5, False, 0.3, False, 0.0, [SlotReading(None, 0, "", None)] * 2)
+    ev = run(tr, [faint, replace(faint, t=0.6), reading(er, 0.7, death=True), reading(er, 0.8, death=True)])
+    assert not kinds(ev, "defeated") and not kinds(ev, "kill")
+    assert kinds(ev, "death")[0]["boss"] == boss
+
+
 def test_sliver_left_and_you_died_takes_defeated_back(er):
     tr = Tracker(er)
     boss = "Margit, the Fell Omen"

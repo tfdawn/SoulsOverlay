@@ -205,16 +205,22 @@ class Tracker:
 
     # -- helpers ---------------------------------------------------------
     def _defeat(self, enc: Encounter, r: FrameReading, now: float, events) -> bool:
-        """DEFEATED as soon as the bar reads 0%, saved as a kill once the boss
-        has left the screen. True while that is in hand."""
+        """DEFEATED as soon as the bar reads 0%, or vanishes while nearly empty
+        (Elden Ring can drop the bar before an empty one is ever read), saved
+        as a kill once the boss has left the screen. True while that is in hand."""
         cfg = self.cfg
         max_ph = self.profile.max_phases(enc.boss)
         if max_ph is not None and enc.phase < max_ph:
             return False
         last = [p for _, ph, p in list(enc.readings)[-2:] if ph == enc.phase]
         if enc.defeated_at is None:
-            if len(last) == 2 and max(last) <= cfg["defeat_pct"] and enc.last_seen == now:
-                enc.defeated_at = enc.still_there = now
+            zero = len(last) == 2 and max(last) <= cfg["defeat_pct"] and enc.last_seen == now
+            # Not while YOU DIED is coming in: that's the bar going because we died.
+            vanished = (enc.last_seen < now and self._bar_misses >= cfg["bar_hide_frames"]
+                        and last and last[-1] <= cfg["kill_threshold_pct"]
+                        and not r.death and r.death_score < self.profile.data["death"]["with_bar_score"])
+            if zero or vanished:
+                enc.defeated_at, enc.still_there = now, enc.last_seen
                 events.append(("defeated", {"boss": enc.boss, "phase": enc.phase}))
                 return True
             return False
