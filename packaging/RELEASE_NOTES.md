@@ -1,6 +1,7 @@
-## What's new in 1.0.7
+## What's new in 1.0.8
 
-- **The overlay in OBS now refreshes itself after an update.** If OBS is still showing the overlay from an older version, the SoulsOverlay window tells you to refresh the Browser source. After that one refresh you won't need to do it again.
+- **Dark Souls III works out of the box on 16:9 screens.** The preset is now measured from real game footage at 1080p, so it fits 1920x1080, 2560x1440, 3840x2160 and other 16:9 sizes without calibrating. It reads the boss bar with its yellow damage trail and the boss name, catches YOU DIED with a proper template, and shows DEFEATED the moment the bar hits 0%. Two-boss fights like Demon in Pain and Demon from Below are tracked as well. It's no longer marked WiP.
+- If you calibrated Dark Souls III yourself, your own profile is kept. To switch to the new preset, delete `profiles/dark_souls_3.json` next to the exe and restart.
 
 ## How to install
 
