@@ -1,7 +1,6 @@
-## What's new in 1.0.9
+## What's new in 1.0.10
 
-- **Dark Souls III: Abyss Watchers' second phase now carries on the same fight.** The cutscene between the phases is almost a minute long, and the overlay used to give up on the fight halfway through, so phase 2 started over as a new fight. Now it waits for the bar to come back and counts it as phase 2, and DEFEATED doesn't show when phase 1 empties. Fire and blood in the cutscene can't pass for the boss bar any more either.
-- **Dark Souls III: the boss bar reads in dark arenas.** The empty part of the bar is see-through, and in dark places like the Abyss Watchers' arena the overlay could lose the bar.
+- **Dark Souls III: the overlay no longer flickers when you look at a bright sky.** The empty part of the boss bar is see-through, and against the sky in the Iudex Gundyr fight it turns pale grey. The overlay didn't recognise that as part of the bar, so it kept losing the bar and hiding. It now reads the bar steadily there.
 
 ## How to install
 
