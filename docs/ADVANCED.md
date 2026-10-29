@@ -235,8 +235,8 @@ HTTPS requests, so nothing on your PC has to be reachable from the internet.
   health, and the death screen) at 2560, 1920 and 1280 wide, and so are Dark Souls Remastered
   and Dark Souls II. Dark Souls III is checked against 1080p game footage (Iudex Gundyr: full
   health, a damage trail, the killing blow, the emptied bar and YOU DIED) at the same sizes. Its
-  second boss slot was measured from one screenshot, and phase changes in its multi-phase fights
-  haven't been seen in footage yet.
+  second boss slot was measured from one screenshot. Of its multi-phase fights, only the Abyss
+  Watchers' phase change (a long cutscene) has been checked on footage.
 * In Dark Souls II, both Twin Dragonriders bars are labelled "Dragonrider", and the DLC's blue
   Smelter Demon is labelled "Smelter Demon", so those fights count as the Dragonrider and the
   Smelter Demon. Use `boss_set` to keep them apart.

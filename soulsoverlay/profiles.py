@@ -57,6 +57,9 @@ DEFAULTS: dict = {
         "defeat_confirm_s": 1.5,
         "defeat_alive_s": 0.75,
         "phase_low_pct": 15.0,
+        # How long a boss emptied in an earlier phase may stay off screen (a
+        # cutscene between phases) before the fight is given up.
+        "phase_wait_s": 32.0,
         "phase_refill_pct": 80.0,
         "confirm_reads": 2,
         "instant_score": 92,  # a match this clear engages on the first read

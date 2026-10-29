@@ -345,3 +345,23 @@ def test_defeated_in_every_game(game, boss):
     assert kinds(ev, "defeated") == [{"boss": boss, "phase": 1}]
     ev = run(tr, [reading(p, 6.5), reading(p, 7.0), reading(p, 7.5)])
     assert kinds(ev, "kill") == [{"boss": boss, "phase": 1, "shown": True}]
+
+
+def test_long_cutscene_between_phases(profiles_dir):
+    """Abyss Watchers: phase 1 empties, a ~57s cutscene full of fire and blood
+    (phantom bars, no name), then the same name on a full bar is phase 2."""
+    from soulsoverlay.profiles import load_profile
+
+    ds3 = load_profile(profiles_dir, "dark_souls_3")
+    tr = Tracker(ds3)
+    aw = "Abyss Watchers"
+    seq = [reading(ds3, i * 0.5, slot(ds3, aw, max(0, 18 - i * 3))) for i in range(10)]
+    seq += [reading(ds3, 5 + i * 0.5) for i in range(80)]
+    seq += [reading(ds3, 45 + i * 0.5, slot(ds3, None, 40)) for i in range(10)]  # a phantom bar
+    seq += [reading(ds3, 61 + i * 0.5, slot(ds3, aw, 100 - i)) for i in range(6)]
+    seq += [reading(ds3, 64, slot(ds3, aw, 95), death=True), reading(ds3, 64.5, death=True)]
+    ev = run(tr, seq)
+    assert len(kinds(ev, "engage")) == 1
+    assert not kinds(ev, "defeated") and not kinds(ev, "disengage")
+    assert [p["phase"] for p in kinds(ev, "phase")] == [2]
+    assert kinds(ev, "death")[0]["phase"] == 2

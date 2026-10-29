@@ -195,7 +195,7 @@ class Tracker:
                 elif last is not None and last <= cfg["kill_threshold_pct"] and not final_phase:
                     # Mid-fight transition (e.g. a cutscene between phases):
                     # keep waiting a while longer for the next bar.
-                    if now - enc.last_seen >= 4 * cfg["disengage_s"]:
+                    if now - enc.last_seen >= cfg["phase_wait_s"]:
                         events.append(("disengage", {"boss": enc.boss}))
                         self.encounter = None
                 else:
@@ -275,6 +275,11 @@ class Tracker:
         # Only trust bars when the name strip belongs to this encounter (or
         # could not be read this frame, which happens on busy backgrounds).
         if any(s.match and s.match.boss != enc.boss for s in visible):
+            return
+        # Back from a long gap (a cutscene between phases): cutscenes are full
+        # of fire and blood that can pass for a bar, so wait for the name.
+        if now - enc.last_seen > cfg["disengage_s"] and not any(
+                s.match and s.match.boss == enc.boss for s in visible):
             return
         enc.last_seen = now
         for s in visible:

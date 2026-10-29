@@ -308,6 +308,14 @@ def test_ds3_killing_blow_and_empty_bar(ds3, width):
     assert read_bar(frame("ds3_gundyr_empty", width), ds3.boss_slots[0]["bar"], ds3.data["bar_colors"]).pct is None
 
 
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+def test_ds3_bar_in_a_dark_arena(ds3, width):
+    """The empty part of the bar lets the scene through: in the Abyss Watchers'
+    dark arena it's nearly black, and the fill must still read."""
+    r = read_bar(frame("ds3_abyss_dark", width), ds3.boss_slots[0]["bar"], ds3.data["bar_colors"])
+    assert r.pct == pytest.approx(18.0, abs=1.0)
+
+
 @needs_tesseract
 @pytest.mark.parametrize("name", ["ds3_gundyr_full", "ds3_gundyr_trail", "ds3_gundyr_low", "ds3_gundyr_zero"])
 @pytest.mark.parametrize("width", [2560, 1920, 1280])
