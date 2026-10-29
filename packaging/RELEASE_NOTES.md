@@ -1,7 +1,7 @@
-## What's new in 1.0.5
+## What's new in 1.0.6
 
-- **DEFEATED shows the moment the boss's bar hits 0%**, instead of several seconds after the bar is gone (in Elden Ring it used to land on top of the item reward).
-- If the boss survived on a sliver of health the bar can't show and YOU DIED comes up while the boss is still on screen, DEFEATED is taken back and it counts as a death instead. Dying after the boss has gone keeps the kill.
+- **DEFEATED now shows the moment the boss dies**, also when Elden Ring drops the boss bar before it's ever drawn empty (in 1.0.5 that case still waited several seconds).
+- If YOU DIED comes up while the boss is still on screen (it survived on a sliver of health), DEFEATED is taken back and it counts as a death instead.
 
 ## How to install
 
