@@ -37,11 +37,17 @@ def _rest_is_empty(bar: np.ndarray, rest: np.ndarray, colors: dict, threshold: f
     colour. Brown or gold scenery (sunlit floors, torches) behind an unused
     slot can pass for a sliver of fill or trail, but not with an empty bar
     beside it. Half the rest is enough, so a boss or player standing in front
-    of the bar doesn't hide it. Profiles without an "empty" colour skip this."""
+    of the bar doesn't hide it. Profiles without an "empty" colour skip this.
+    "empty" can be a list of colours, for a see-through bar that takes on the
+    scene behind it (Dark Souls III: bluish in the dark, grey over a bright sky)."""
     spec = colors.get("empty")
     if spec is None or rest.sum() < max(3, rest.size // 20):
         return True
-    empty = hsv_mask(bar, spec).mean(axis=0) >= threshold
+    specs = spec if isinstance(spec, list) else [spec]
+    mask = np.zeros(bar.shape[:2], dtype=bool)
+    for s in specs:
+        mask |= hsv_mask(bar, s)
+    empty = mask.mean(axis=0) >= threshold
     return float(empty[rest].mean()) >= 0.5
 
 

@@ -1,7 +1,7 @@
 {
   "id": "dark_souls_3",
   "name": "Dark Souls III",
-  "notes": "Calibrated from 1080p (16:9) footage: Iudex Gundyr at full health, with a delayed-damage trail, killed, and a death through to the loading screen. The second boss slot (Demon in Pain and Demon from Below) is from a 1080p screenshot: with two bosses the first bar moves up 65 px and the second takes the usual place. DS3 keeps the bar on screen under YOU DIED until the loading screen, and an emptied bar stays up through the boss's death animation. The empty part of the bar is see-through, so it's nearly black in dark arenas. Abyss Watchers has a ~57s cutscene between phases (checked on footage), so tracking.phase_wait_s keeps the fight open for 90s.",
+  "notes": "Calibrated from 1080p (16:9) footage: Iudex Gundyr at full health, with a delayed-damage trail, killed, and a death through to the loading screen. The second boss slot (Demon in Pain and Demon from Below) is from a 1080p screenshot: with two bosses the first bar moves up 65 px and the second takes the usual place. DS3 keeps the bar on screen under YOU DIED until the loading screen, and an emptied bar stays up through the boss's death animation. The empty part of the bar is see-through, so it's nearly black in dark arenas and pale grey over a bright sky. Abyss Watchers has a ~57s cutscene between phases (checked on footage), so tracking.phase_wait_s keeps the fight open for 90s.",
   "regions": {
     "death": [
       0.3,
@@ -81,22 +81,40 @@
         255
       ]
     },
-    "empty": {
-      "h": [
-        [
-          85,
-          140
+    "empty": [
+      {
+        "h": [
+          [
+            85,
+            140
+          ]
+        ],
+        "s": [
+          0,
+          255
+        ],
+        "v": [
+          5,
+          120
         ]
-      ],
-      "s": [
-        0,
-        255
-      ],
-      "v": [
-        5,
-        120
-      ]
-    }
+      },
+      {
+        "h": [
+          [
+            0,
+            180
+          ]
+        ],
+        "s": [
+          0,
+          50
+        ],
+        "v": [
+          5,
+          150
+        ]
+      }
+    ]
   },
   "bosses": [
     {

@@ -316,6 +316,14 @@ def test_ds3_bar_in_a_dark_arena(ds3, width):
     assert r.pct == pytest.approx(18.0, abs=1.0)
 
 
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+def test_ds3_bar_against_a_bright_sky(ds3, width):
+    """Looking up at the sky, the see-through empty part turns pale grey; the
+    bar used to drop out there and the HUD flickered on and off."""
+    r = read_bar(frame("ds3_gundyr_sky", width), ds3.boss_slots[0]["bar"], ds3.data["bar_colors"])
+    assert r.pct == pytest.approx(65.7, abs=1.0)
+
+
 @needs_tesseract
 @pytest.mark.parametrize("name", ["ds3_gundyr_full", "ds3_gundyr_trail", "ds3_gundyr_low", "ds3_gundyr_zero"])
 @pytest.mark.parametrize("width", [2560, 1920, 1280])
