@@ -1,8 +1,8 @@
-## What's new in 1.0.11
+## What's new in 1.0.12
 
-- **SoulsOverlay remembers your game.** It starts on the game you last picked instead of always opening on Elden Ring.
-- **Closing the window now quits SoulsOverlay.** To keep it counting from the tray when you close the window, turn on **Keep running in the tray** in Settings. If you had already changed your window settings, your tray setting stays as it was.
-- **The game list only shows the supported games:** Elden Ring, Dark Souls Remastered, Dark Souls II and Dark Souls III. "Generic (calibrate me)" is gone from it.
+- **SoulsOverlay switches to the game you're playing.** Start Dark Souls III while SoulsOverlay is set to Elden Ring, and it switches to Dark Souls III and its characters by itself, so your deaths and PBs land in the right place. It asks Steam which game is running (one registry value, `RunningAppID`) and reads nothing else: not your list of programs, and nothing of the game. It never switches mid-fight, the window tells you when it has switched, and **Back to** undoes it.
+- Prefer to choose yourself? Click **Don't switch by itself, ask first** on that notice, and from then on the window only asks *"You're playing Dark Souls III. Switch?"*.
+- Playing on a console through a capture card, or on a second PC? Nothing changes: pick the game in the window as before.
 
 ## How to install
 
