@@ -26,7 +26,7 @@ from . import __version__, app, updater
 log = logging.getLogger(__name__)
 
 # The window's own preferences, kept in data/launcher.json.
-PREFS = {"close_to_tray": True,  # closing the window hides it to the tray
+PREFS = {"close_to_tray": False,  # closing the window hides it to the tray instead of quitting
          "tray_notice": True}    # say so when it does
 
 
@@ -114,20 +114,25 @@ class Api:
         self._path = cfg.data_dir / "launcher.json"
         self._window = None  # private: pywebview walks public attributes of js_api
 
-    def get_prefs(self) -> dict:
+    def _saved(self) -> dict:
         try:
             saved = json.loads(self._path.read_text(encoding="utf-8"))
         except (OSError, ValueError):
             saved = {}
+        return saved if isinstance(saved, dict) else {}
+
+    def get_prefs(self) -> dict:
+        saved = self._saved()
         return {k: saved[k] if isinstance(saved.get(k), bool) else v for k, v in PREFS.items()}
 
     def set_pref(self, name: str, on: bool) -> dict:
-        prefs = self.get_prefs()
+        # Only what the user changed is saved, so the others follow the defaults.
         if name in PREFS:
-            prefs[name] = bool(on)
+            saved = {k: v for k, v in self._saved().items() if k in PREFS}
+            saved[name] = bool(on)
             self._path.parent.mkdir(parents=True, exist_ok=True)
-            self._path.write_text(json.dumps(prefs, indent=2) + "\n", encoding="utf-8")
-        return prefs
+            self._path.write_text(json.dumps(saved, indent=2) + "\n", encoding="utf-8")
+        return self.get_prefs()
 
     def hide_window(self):
         if self._window:

@@ -54,7 +54,7 @@ That's it. Fight a boss, and your deaths and PB appear under its health bar.
   frame with a boss at full health, or type in your HUD scale.
 - **Updates:** when a new version is out, the window offers it. Click **Update…**, confirm, and
   it restarts on the new version. Your settings and stats are kept.
-- Closing the window keeps it running in the tray, so it keeps counting. To have it quit instead, turn off
+- Closing the window quits SoulsOverlay. To keep it counting from the tray instead, turn on
   **Keep running in the tray** in Settings.
 
 <br clear="right">
