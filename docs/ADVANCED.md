@@ -46,10 +46,9 @@ deaths and PBs carry over on the first start. If you installed the old version w
 
 ## Calibrate once per game
 
-The Elden Ring, Dark Souls Remastered and Dark Souls II presets have been calibrated against
-real screenshots and come with a death template, so on a 16:9 screen they should work as they are.
-The Dark Souls III preset is a work in progress (marked WiP in the game list) and still uses
-*estimated* regions. Check it, and the others if you play ultrawide, before you rely on it.
+Every preset (Elden Ring, Dark Souls Remastered, Dark Souls II and Dark Souls III) has been
+calibrated against real footage and comes with a death template, so on a 16:9 screen they should
+work as they are. If you play ultrawide, check them before you rely on them.
 
 Dark Souls Remastered lets you change the HUD scale, which moves the boss bar. Its preset
 matches a HUD scale of 0.80. For any other value, open the calibration page, type your HUD
@@ -234,7 +233,10 @@ HTTPS requests, so nothing on your PC has to be reachable from the internet.
 
 * Elden Ring is checked against real screenshots (full health, a fresh damage trail, about 20%
   health, and the death screen) at 2560, 1920 and 1280 wide, and so are Dark Souls Remastered
-  and Dark Souls II. The Dark Souls III preset hasn't been checked against real screenshots yet.
+  and Dark Souls II. Dark Souls III is checked against 1080p game footage (Iudex Gundyr: full
+  health, a damage trail, the killing blow, the emptied bar and YOU DIED) at the same sizes. Its
+  second boss slot was measured from one screenshot, and phase changes in its multi-phase fights
+  haven't been seen in footage yet.
 * In Dark Souls II, both Twin Dragonriders bars are labelled "Dragonrider", and the DLC's blue
   Smelter Demon is labelled "Smelter Demon", so those fights count as the Dragonrider and the
   Smelter Demon. Use `boss_set` to keep them apart.

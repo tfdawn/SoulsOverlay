@@ -1,45 +1,103 @@
 {
   "id": "dark_souls_3",
   "name": "Dark Souls III",
-  "notes": "Regions are first estimates for a 16:9 frame and need checking with the calibration page against real screenshots.",
+  "notes": "Calibrated from 1080p (16:9) footage: Iudex Gundyr at full health, with a delayed-damage trail, killed, and a death through to the loading screen. The second boss slot (Demon in Pain and Demon from Below) is from a 1080p screenshot: with two bosses the first bar moves up 65 px and the second takes the usual place. DS3 keeps the bar on screen under YOU DIED until the loading screen, and an emptied bar stays up through the boss's death animation.",
   "regions": {
     "death": [
-      0.25,
+      0.3,
       0.42,
-      0.5,
-      0.16
+      0.4,
+      0.17
     ]
   },
   "boss_slots": [
     {
       "name": [
-        0.245,
-        0.836,
-        0.36,
-        0.032
+        0.2875,
+        0.8019,
+        0.24,
+        0.0296
       ],
       "bar": [
-        0.249,
-        0.872,
-        0.502,
-        0.008
+        0.2906,
+        0.8361,
+        0.5219,
+        0.0065
       ]
     },
     {
       "name": [
-        0.245,
-        0.786,
-        0.36,
-        0.032
+        0.2875,
+        0.7417,
+        0.24,
+        0.0296
       ],
       "bar": [
-        0.249,
-        0.822,
-        0.502,
-        0.008
+        0.2906,
+        0.7759,
+        0.5219,
+        0.0065
       ]
     }
   ],
+  "death": {
+    "template": "templates/dark_souls_3_death.png",
+    "threshold": 0.3
+  },
+  "bar_colors": {
+    "fill": {
+      "h": [
+        [
+          0,
+          10
+        ],
+        [
+          170,
+          180
+        ]
+      ],
+      "s": [
+        140,
+        255
+      ],
+      "v": [
+        25,
+        255
+      ]
+    },
+    "trail": {
+      "h": [
+        [
+          18,
+          40
+        ]
+      ],
+      "s": [
+        130,
+        255
+      ],
+      "v": [
+        25,
+        255
+      ]
+    },
+    "empty": {
+      "h": [
+        [
+          0,
+          180
+        ]
+      ],
+      "s": [
+        0,
+        80
+      ],
+      "v": [
+        25,
+        120
+      ]
+    }
+  },
   "bosses": [
     {
       "name": "Iudex Gundyr"
@@ -102,7 +160,10 @@
       "aliases": [
         "King of the Storm"
       ],
-      "phases": 2
+      "phases": 2,
+      "phase_names": {
+        "Nameless King": 2
+      }
     },
     {
       "name": "Soul of Cinder",
@@ -128,7 +189,11 @@
         "Demon in Pain",
         "Demon from Below"
       ],
-      "phases": 2
+      "phase_names": {
+        "Demon Prince": 3
+      },
+      "bars": 2,
+      "phases": 3
     },
     {
       "name": "Halflight, Spear of the Church"

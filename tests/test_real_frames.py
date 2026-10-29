@@ -280,6 +280,82 @@ def test_ds2_three_bars(ds2, width):
     assert ds2.bar_count("Ruin Sentinels") == 3
 
 
+# -- Dark Souls III: Iudex Gundyr, from the user's 1080p 60 fps clips. DS3 has no
+# HUD scale setting. -----------------------------------------------------------
+
+@pytest.fixture(scope="module")
+def ds3():
+    return load_profile(ROOT / "profiles", "dark_souls_3")
+
+
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+@pytest.mark.parametrize("name,pct,trail", [
+    ("ds3_gundyr_full", 100, 0), ("ds3_gundyr_trail", 94.4, 5.6), ("ds3_gundyr_low", 3.7, 0),
+    ("ds3_gundyr_died", 94.2, 0)])
+def test_ds3_bar(ds3, width, name, pct, trail):
+    r = read_bar(frame(name, width), ds3.boss_slots[0]["bar"], ds3.data["bar_colors"])
+    assert r.pct == pytest.approx(pct, abs=1.0)
+    assert r.trail_pct == pytest.approx(trail, abs=1.5)
+    assert read_bar(frame(name, width), ds3.boss_slots[1]["bar"], ds3.data["bar_colors"]).pct is None
+
+
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+def test_ds3_killing_blow_and_empty_bar(ds3, width):
+    """The real killing blow: only trail left (0%), then the emptied bar, which
+    DS3 keeps on screen through the boss's death animation."""
+    r = read_bar(frame("ds3_gundyr_zero", width), ds3.boss_slots[0]["bar"], ds3.data["bar_colors"])
+    assert r.pct == 0.0 and r.trail_pct == pytest.approx(3.6, abs=1.5)
+    assert read_bar(frame("ds3_gundyr_empty", width), ds3.boss_slots[0]["bar"], ds3.data["bar_colors"]).pct is None
+
+
+@needs_tesseract
+@pytest.mark.parametrize("name", ["ds3_gundyr_full", "ds3_gundyr_trail", "ds3_gundyr_low", "ds3_gundyr_zero"])
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+def test_ds3_boss_name(ds3, name, width):
+    slot = Analyzer(ds3).analyze(frame(name, width), force_ocr=True).slots[0]
+    assert slot.match is not None and slot.match.boss == "Iudex Gundyr", slot.text
+
+
+@pytest.mark.parametrize("width", [2560, 1920, 1280])
+def test_ds3_death(ds3, width):
+    a = Analyzer(ds3)
+    assert a.death.mode == "template"
+    hit, score = a.death.detect(frame("ds3_gundyr_died", width))
+    assert hit and score > 0.9
+    # 0.5s into the fade-in
+    hit, score = a.death.detect(frame("ds3_gundyr_died_fadein", width))
+    assert hit
+    for name in ("ds3_gundyr_full", "ds3_gundyr_trail", "ds3_gundyr_low", "ds3_gundyr_zero",
+                 "ds3_gundyr_empty"):
+        hit, score = a.death.detect(frame(name, width))
+        assert not hit and score < 0.15, name
+
+
+@needs_tesseract
+def test_ds3_real_kill_and_death():
+    """Frame by frame as in the clips: DEFEATED on the second 0% read, saved as
+    a kill once the name goes; a death under a bar that stays up."""
+    from soulsoverlay.tracker import Tracker
+
+    p = load_profile(ROOT / "profiles", "dark_souls_3")
+
+    def play(frames):
+        tr, a, ev = Tracker(p), Analyzer(p), []
+        for i, img in enumerate(frames):
+            r = a.analyze(img, now=i * 0.1, watch_names=tr.defeat_pending)
+            ev += [(round(r.t, 1), k) for k, _ in tr.update(r)]
+        return ev, tr
+
+    low, zero, empty = (frame(n, 1920) for n in ("ds3_gundyr_low", "ds3_gundyr_zero", "ds3_gundyr_empty"))
+    ev, _ = play([low] * 5 + [zero] * 5 + [empty] * 10 + [_without_boss(p, empty)] * 20)
+    assert [(t, k) for t, k in ev if k in ("defeated", "kill", "death")] == [(0.6, "defeated"), (3.7, "kill")]
+
+    full, died = frame("ds3_gundyr_trail", 1920), frame("ds3_gundyr_died", 1920)
+    ev, tr = play([full] * 5 + [frame("ds3_gundyr_died_fadein", 1920)] + [died] * 10 + [full] * 10)
+    assert [k for _, k in ev if k in ("engage", "death", "defeated", "kill")] == ["engage", "death"]
+    assert tr.encounter is None and tr.bar_up  # the HUD stays with the game's bar
+
+
 @needs_tesseract
 def test_watch_names_reads_the_name_after_the_bar_empties(er_real):
     """A boss left on a sliver: the bar looks empty, but its name is still up."""
@@ -300,7 +376,8 @@ def test_watch_names_reads_the_name_after_the_bar_empties(er_real):
 
 GAMES = [("elden_ring", "er_sentinel_low", "er_morgott_trail", "Tree Sentinel", "er_sentinel_died_fadein"),
          ("dark_souls_remastered", "dsr_asylum_fight", "dsr_asylum_trail", "Asylum Demon", "dsr_asylum_died"),
-         ("dark_souls_2", "ds2_dragonrider_low", "ds2_dragonrider_trail", "Dragonrider", "ds2_dragonrider_died")]
+         ("dark_souls_2", "ds2_dragonrider_low", "ds2_dragonrider_trail", "Dragonrider", "ds2_dragonrider_died"),
+         ("dark_souls_3", "ds3_gundyr_low", "ds3_gundyr_trail", "Iudex Gundyr", "ds3_gundyr_died")]
 
 
 def _box(img, region):

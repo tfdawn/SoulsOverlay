@@ -21,7 +21,7 @@ Supported games:
   - ⚠️ It can't yet tell the **Twin Dragonriders** from the Heide's Tower **Dragonrider**, or the
     DLC's **blue Smelter Demon** from the Iron Keep one, because the game gives them the same name.
     Those fights share their deaths and PB.
-- **Dark Souls III** (WiP: not checked against the game yet, so it may need calibrating)
+- **Dark Souls III**
 
 > **Playing on ultrawide?** The presets are tested on 16:9 screens (2560x1440, 1920x1080 and
 > 1280x720). On other aspect ratios the boss bar sits somewhere else, so use **Calibrate** once.

@@ -222,9 +222,9 @@ def load_profile(profiles_dir: Path, game_id: str) -> Profile:
 
 
 # Game pickers list Elden Ring first, then the Dark Souls games in release order.
-# The Dark Souls III preset hasn't been checked in game yet.
+# A game whose preset hasn't been checked in game yet goes in WIP.
 ORDER = ("elden_ring", "dark_souls_remastered", "dark_souls_2", "dark_souls_3")
-WIP = {"dark_souls_3"}
+WIP: set[str] = set()
 
 
 def list_profiles(profiles_dir: Path) -> list[dict]:
