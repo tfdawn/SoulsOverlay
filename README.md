@@ -11,21 +11,21 @@ lights up with **NEW PB**.
   <sub>Beat your PB and the light runs along the boss's health bar. Pick a colour theme, or colour each part yourself, in the Overlay Editor.</sub>
 </p>
 
-It watches your game through OBS, so it never touches the game: no mods, no memory reading.
+## Souls Overlay
 
-Supported games:
+<img src="docs/window.png" alt="The SoulsOverlay window" width="380" align="right">
 
-- **Elden Ring**
-- **Dark Souls Remastered**
-- **Dark Souls II: Scholar of the First Sin**, including the DLCs
-  - ⚠️ It can't yet tell the **Twin Dragonriders** from the Heide's Tower **Dragonrider**, or the
-    DLC's **blue Smelter Demon** from the Iron Keep one, because the game gives them the same name.
-    Those fights share their deaths and PB.
-- **Dark Souls III**
+- **Start / Stop** the tracking.
+- **Game:** Switches by itself to the game you're playing on Steam (Elden Ring, Dark Souls Remastered, II or III), with that game's characters.
+- **Character:** Keep separate deaths and PBs for each in-game character. Switch, add or rename them at the top.
+- **Settings** has the Overlay Editor for personalizing the overlay to your liking, save in browser and it auto-applies.
+- **Calibrate** Shows where the program is drawing the games boss bar, if you play on an ultrawide screen or
+  changed the HUD scale in Dark Souls Remastered. **Auto-find boss bar** does it for you from a
+  frame with a boss at full health, or type in your HUD scale.
+- **Updates:** Auto-update built in, checks against your checksum to make sure it's the correct file otherwise it fails.
 
-> **Playing on ultrawide?** The presets are tested on 16:9 screens (2560x1440, 1920x1080 and
-> 1280x720). On other aspect ratios the boss bar sits somewhere else, so use **Calibrate** once.
-> **Auto-find boss bar** does most of it for you.
+<br clear="right">
+
 
 ## Get started
 
@@ -42,23 +42,19 @@ That's it. Fight a boss, and your deaths and PB appear under its health bar.
 > **"Windows protected your PC"?** Click **More info**, then **Run anyway**. The exe isn't
 > code-signed, which costs money. It's built by GitHub straight from this code.
 
-## The SoulsOverlay window
+## Supported games:
 
-<img src="docs/window.png" alt="The SoulsOverlay window" width="380" align="right">
+- **Elden Ring**
+- **Dark Souls Remastered**
+- **Dark Souls II: Scholar of the First Sin**, including the DLCs
+  - ⚠️ It can't yet tell the **Twin Dragonriders** from the Heide's Tower **Dragonrider**, or the
+    DLC's **blue Smelter Demon** from the Iron Keep one, because the game gives them the same name.
+    Those fights share their deaths and PB.
+- **Dark Souls III**
 
-- **Start / Stop** the tracking.
-- **Game:** it switches by itself to the game you're playing on Steam (Elden Ring, Dark Souls Remastered, II or III), with that game's characters. You can still pick one at the top.
-- **Character:** keep separate deaths and PBs for each character. Switch, add or rename them at the top.
-- **Settings** has the **Overlay Editor** (colour themes, a colour for each part of the text, and the NEW PB effect, with a live preview) and the hotkeys.
-- **Calibrate** shows it where the game draws its boss bar, if you play on an ultrawide screen or
-  changed the HUD scale in Dark Souls Remastered. **Auto-find boss bar** does it for you from a
-  frame with a boss at full health, or type in your HUD scale.
-- **Updates:** when a new version is out, the window offers it. Click **Update…**, confirm, and
-  it restarts on the new version. Your settings and stats are kept.
-- Closing the window quits SoulsOverlay. To keep it counting from the tray instead, turn on
-  **Keep running in the tray** in Settings.
-
-<br clear="right">
+> **Playing on ultrawide?** The presets are tested on 16:9 screens (2560x1440, 1920x1080 and
+> 1280x720). On other aspect ratios the boss bar sits somewhere else, so use **Calibrate** once.
+> **Auto-find boss bar** does most of it for you.
 
 ## Hotkeys
 
