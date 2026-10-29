@@ -58,16 +58,13 @@ Your deaths and PB show up the next time a boss health bar is on screen.
 
 ## Supported games
 
-- **Start / Stop** the tracking.
-- **Game:** Switches by itself to the game you're playing on Steam (Elden Ring, Dark Souls Remastered, II or III), with that game's characters.
-- **Character:** Keep separate deaths and PBs for each in-game character. Switch, add or rename them at the top.
-- **Settings** has the Overlay Editor for personalizing the overlay to your liking, save in browser and it auto-applies.
-- **Calibrate** Shows where the program is drawing the games boss bar, if you play on an ultrawide screen or
-  changed the HUD scale in Dark Souls Remastered. **Auto-find boss bar** does it for you from a
-  frame with a boss at full health, or type in your HUD scale.
-- **Updates:** Auto-update built in, checks against your checksum to make sure it's the correct file otherwise it fails.
-
-<br clear="right">
+- **Elden Ring**
+- **Dark Souls Remastered**
+- **Dark Souls II: Scholar of the First Sin**, including the DLCs
+  - ⚠️ It can't yet tell the **Twin Dragonriders** from the Heide's Tower **Dragonrider**, or the
+    DLC's **blue Smelter Demon** from the Iron Keep one, because the game gives them the same name.
+    Those fights share their deaths and PB.
+- **Dark Souls III**
 
 > **Ultrawide?** The presets are tested at 16:9 (2560x1440, 1920x1080 and 1280x720). On other
 > aspect ratios the boss bar is in a different place, so run **Calibrate** once.
