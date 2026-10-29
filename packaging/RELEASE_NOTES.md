@@ -1,6 +1,8 @@
-## What's new in 1.0.10
+## What's new in 1.0.11
 
-- **Dark Souls III: the overlay no longer flickers when you look at a bright sky.** The empty part of the boss bar is see-through, and against the sky in the Iudex Gundyr fight it turns pale grey. The overlay didn't recognise that as part of the bar, so it kept losing the bar and hiding. It now reads the bar steadily there.
+- **SoulsOverlay remembers your game.** It starts on the game you last picked instead of always opening on Elden Ring.
+- **Closing the window now quits SoulsOverlay.** To keep it counting from the tray when you close the window, turn on **Keep running in the tray** in Settings. If you had already changed your window settings, your tray setting stays as it was.
+- **The game list only shows the supported games:** Elden Ring, Dark Souls Remastered, Dark Souls II and Dark Souls III. "Generic (calibrate me)" is gone from it.
 
 ## How to install
 
