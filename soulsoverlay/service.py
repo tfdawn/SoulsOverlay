@@ -10,6 +10,7 @@ import cv2
 import numpy as np
 
 from .capture import Backoff, ObsCapture
+from . import gamedetect
 from .config import Config, save_top
 from .detect import bossname
 from .detect.analyzer import Analyzer, FrameReading
@@ -24,7 +25,7 @@ log = logging.getLogger(__name__)
 
 CONTROL_COMMANDS = ("death_add", "death_undo", "boss_reset", "boss_set", "boss_clear", "game_set",
                     "character_set", "character_add", "character_rename", "character_delete",
-                    "snapshot", "start", "stop")
+                    "snapshot", "start", "stop", "game_keep", "game_notice_ok")
 
 
 class Service:
@@ -44,6 +45,12 @@ class Service:
         self.stopped = False  # Stop in the launcher: no OBS connection, no detection
         self._backoff = Backoff()
         self._black = False
+        # Game detection: the game found running, one the user chose not to
+        # switch to while it runs, and the game an automatic switch came from.
+        self.detected: str | None = None
+        self._kept: str | None = None
+        self._switched_from: str | None = None
+        self._game_checked = 0.0
         try:
             bossname.configure(config.tesseract_cmd)
             self.status["ocr"] = "ok"
@@ -67,8 +74,66 @@ class Service:
         self.tracker.profile = self.profile
         self.status["detector"] = self.analyzer.death.mode
 
+    def _remember_game(self, gid: str):
+        """Start on this game next time too."""
+        self.config.game = gid
+        # Before the first-run OBS form is saved there's no config.toml, and
+        # writing one here would skip that form; save_obs adds the game then.
+        if self.config.path is not None and self.config.path.exists():
+            try:
+                save_top(self.config.path, "game", gid)
+            except OSError as e:
+                log.warning("couldn't save the game to %s: %s", self.config.path, e)
+
     def games(self) -> list[dict]:
         return list_profiles(self.config.profiles_dir)
+
+    def _game_name(self, gid: str | None) -> str | None:
+        return next((g["game"] for g in self.games() if g["id"] == gid), gid)
+
+    # -- which game is running -------------------------------------------
+    GAME_CHECK_S = 3.0
+
+    async def check_game(self):
+        """Look for a known game running, and switch to it (or offer to)."""
+        self._game_checked = time.monotonic()
+        app_id = await asyncio.to_thread(gamedetect.steam_running_app)
+        found = gamedetect.detect(app_id, {g["id"] for g in self.games()})
+        if await self.on_game_detected(found):
+            await self._notify()
+
+    async def on_game_detected(self, found: str | None) -> bool:
+        """Act on the game found running. True if the state changed."""
+        changed = False
+        if found != self.detected:
+            log.info("game running: %s", self._game_name(found) if found else "none we know")
+            self.detected = found
+            self._kept = None
+            changed = True
+        if not found or found in (self.profile.id, self._kept):
+            return changed
+        if not self.config.game_detect.auto_switch:
+            return changed  # the window offers to switch
+        if self.tracker.encounter is not None:
+            return changed  # never in the middle of a fight; try again on the next check
+        old = self.profile.id
+        log.info("switching to %s: it's the game running", self._game_name(found))
+        self.set_game(found)
+        self._remember_game(found)
+        self._switched_from = old
+        await self.bus.publish(Event("game_changed", {"game": found, "auto": True}))
+        return True
+
+    def _game_detect_state(self) -> dict:
+        found = self.detected
+        return {
+            "auto_switch": self.config.game_detect.auto_switch,
+            "running": {"id": found, "name": self._game_name(found)} if found else None,
+            # Offer to switch when not doing it automatically (or the user kept another game).
+            "offer": bool(found and found != self.profile.id and found != self._kept),
+            "switched_from": ({"id": self._switched_from, "name": self._game_name(self._switched_from)}
+                              if self._switched_from else None),
+        }
 
     # -- state -----------------------------------------------------------
     def on_state_change(self, callback):
@@ -102,6 +167,7 @@ class Service:
             "characters": self.store.characters(game),
             "boss": boss,
             "status": dict(self.status),
+            "game_detect": self._game_detect_state(),
             # Where the game draws its boss bar, as fractions of the frame, so
             # the HUD overlay can sit on top of it.
             "layout": {k: (self.profile.boss_slots[0].get(k) if self.profile.boss_slots else None)
@@ -211,16 +277,15 @@ class Service:
             if gid not in {g["id"] for g in self.games()}:
                 raise ValueError(f"unknown game {gid}")
             self.set_game(gid)
-            # Start on this game next time too.
-            self.config.game = gid
-            # Before the first-run OBS form is saved there's no config.toml, and
-            # writing one here would skip that form; save_obs adds the game then.
-            if self.config.path is not None and self.config.path.exists():
-                try:
-                    save_top(self.config.path, "game", gid)
-                except OSError as e:
-                    log.warning("couldn't save the game to %s: %s", self.config.path, e)
+            self._remember_game(gid)
+            self._switched_from = None
+            # Picked by hand while another game runs: leave it until that game closes.
+            self._kept = self.detected if self.detected and self.detected != gid else None
             await self.bus.publish(Event("game_changed", {"game": gid}))
+        elif command == "game_keep":
+            self._kept = self.detected
+        elif command == "game_notice_ok":
+            self._switched_from = None
         elif command == "stop":
             self.stopped = True
             self.live = None
@@ -338,6 +403,11 @@ class Service:
             # and every frame shaves time off spotting a death.
             fighting = self.tracker.encounter is not None or self.tracker.bar_up
             period = 1.0 / max(0.2, self.config.obs.fight_fps if fighting else self.config.obs.fps)
+            if not self.paused and time.monotonic() - self._game_checked >= self.GAME_CHECK_S:
+                try:
+                    await self.check_game()
+                except Exception:
+                    log.exception("game detection failed")
             if self.paused or self.stopped or not backoff.ready():
                 await asyncio.sleep(period)
                 continue

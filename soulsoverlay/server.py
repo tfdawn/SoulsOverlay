@@ -110,6 +110,7 @@ class OverlayServer:
         r.add_post("/api/settings", self.save_settings)
         r.add_get("/api/launcher", self.launcher_info)
         r.add_post("/api/launcher/obs", self.launcher_obs)
+        r.add_post("/api/game_detect", self.save_game_detect)
         r.add_get("/api/hotkeys", self.get_hotkeys)
         r.add_post("/api/hotkeys", self.save_hotkeys)
         r.add_get("/api/update", self.update_status)
@@ -302,6 +303,20 @@ class OverlayServer:
             await asyncio.to_thread(save_top, cfg.path, "game", cfg.game)
         await self.service.set_obs(password, source)
         return web.json_response({"ok": True})
+
+    async def save_game_detect(self, request):
+        """Turn switching to the running game on or off (saved in config.toml)."""
+        try:
+            body = await request.json()
+        except json.JSONDecodeError as e:
+            return _json_error(400, str(e))
+        cfg = self.service.config
+        cfg.game_detect.auto_switch = bool(body.get("auto_switch"))
+        if cfg.path is not None:
+            await asyncio.to_thread(save_section, cfg.path, "game_detect",
+                                    {"auto_switch": cfg.game_detect.auto_switch})
+        await self.service.control("game_notice_ok")
+        return web.json_response({"auto_switch": cfg.game_detect.auto_switch})
 
     # -- hotkeys ---------------------------------------------------------------
     def _hotkeys_json(self):

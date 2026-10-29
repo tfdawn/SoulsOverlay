@@ -1,7 +1,8 @@
 # Copy to config.toml and fill in the OBS password.
 
-# Which profile in profiles/ to use: elden_ring, dark_souls_remastered,
-# dark_souls_2 or dark_souls_3. Pick the game in SoulsOverlay's window.
+# Which profile in profiles/ to start with: elden_ring, dark_souls_remastered,
+# dark_souls_2 or dark_souls_3. SoulsOverlay switches by itself to the Steam
+# game that's running (see [game_detect]), or pick one in its window.
 game = "elden_ring"
 
 # Where the database, control token and your overlay.css live.
@@ -48,6 +49,12 @@ boss_clear = "<ctrl>+<alt>+c"
 snapshot = "<ctrl>+<alt>+s"
 # Actions to leave off, e.g. ["boss_reset"]. The window's Hotkeys box sets this.
 off = []
+
+[game_detect]
+# Switch to the game that's running, with its own characters and PBs. It asks
+# Steam which game it's running (one registry value, RunningAppID), nothing
+# else. With false, the window only offers to switch.
+auto_switch = true
 
 
 # [plugin_settings.webhook_forwarder]

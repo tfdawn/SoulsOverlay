@@ -374,6 +374,47 @@
     } catch (err) { $("hk-msg").textContent = err.message; }
   });
 
+  // -- the game that's running (Steam says which) ---------------------------
+  async function control(command, args) {
+    await api("/api/control", { command, args: args || {} });
+  }
+
+  function renderGameDetect() {
+    const gd = state && state.game_detect;
+    const card = $("gamedetect");
+    let title = "", detail = "", buttons = [], auto = null;
+    if (gd && gd.offer) {
+      const run = gd.running, cur = state.game.name;
+      title = `You're playing ${run.name}`;
+      detail = `SoulsOverlay is set to ${cur}. Switch, so deaths count for your ${run.name} characters?`;
+      buttons = [button(`Switch to ${run.name}`, "primary", () => setGame(run.id)),
+                 button(`Keep ${cur}`, "", () => control("game_keep"))];
+      if (!gd.auto_switch) auto = ["Always switch by itself", true];
+    } else if (gd && gd.switched_from) {
+      title = `Switched to ${state.game.name}`;
+      detail = `It's the game that's running, so its characters and PBs are loaded.`;
+      buttons = [button("OK", "primary", () => control("game_notice_ok")),
+                 button(`Back to ${gd.switched_from.name}`, "", () => setGame(gd.switched_from.id))];
+      auto = ["Don't switch by itself, ask first", false];
+    }
+    card.hidden = !title;
+    $("gd-title").textContent = title;
+    $("gd-detail").textContent = detail;
+    $("gd-actions").replaceChildren(...buttons);
+    $("gd-auto").hidden = !auto;
+    if (auto) {
+      $("gd-auto").textContent = auto[0];
+      $("gd-auto").onclick = async (e) => {
+        e.preventDefault();
+        await api("/api/game_detect", { auto_switch: auto[1] });
+      };
+    }
+  }
+
+  async function setGame(id) {
+    await control("game_set", { game: id });
+  }
+
   // -- updates (SoulsOverlay.exe asks GitHub; nothing downloads until confirmed)
   let update = null;
   let confirming = false;
@@ -497,6 +538,7 @@
         const gameChanged = state && state.game.id !== msg.state.game.id;
         state = msg.state;
         renderCharacters(state.characters);
+        renderGameDetect();
         if (gameChanged) { $("game").value = state.game.id; currentGame = state.game.id; }
         renderStatus();
       }

@@ -47,6 +47,7 @@ That's it. Fight a boss, and your deaths and PB appear under its health bar.
 <img src="docs/window.png" alt="The SoulsOverlay window" width="380" align="right">
 
 - **Start / Stop** the tracking.
+- **Game:** it switches by itself to the game you're playing on Steam (Elden Ring, Dark Souls Remastered, II or III), with that game's characters. You can still pick one at the top.
 - **Character:** keep separate deaths and PBs for each character. Switch, add or rename them at the top.
 - **Settings** has the **Overlay Editor** (colour themes, a colour for each part of the text, and the NEW PB effect, with a live preview) and the hotkeys.
 - **Calibrate** shows it where the game draws its boss bar, if you play on an ultrawide screen or

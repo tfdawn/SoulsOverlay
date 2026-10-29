@@ -55,6 +55,13 @@ class HotkeyConfig:
 
 
 @dataclass
+class GameDetectConfig:
+    # Switch to the game that's running (its own characters and PBs). Off: the
+    # window only offers to switch.
+    auto_switch: bool = True
+
+
+@dataclass
 class Config:
     game: str = "elden_ring"
     data_dir: Path = Path("data")
@@ -62,6 +69,7 @@ class Config:
     obs: ObsConfig = field(default_factory=ObsConfig)
     server: ServerConfig = field(default_factory=ServerConfig)
     hotkeys: HotkeyConfig = field(default_factory=HotkeyConfig)
+    game_detect: GameDetectConfig = field(default_factory=GameDetectConfig)
     # Python modules with a `setup(bus, store, config)` function, loaded at
     # startup. This is where a chat bot bridge plugs in later.
     plugins: list[str] = field(default_factory=list)

@@ -175,6 +175,20 @@ default theme and the settings page's choices, so it wins over both. For example
 :root { --font: "Bebas Neue", sans-serif; --accent: #7fd1ff; }
 ```
 
+## Switching game by itself
+
+While a game runs, Steam keeps its app id in one registry value,
+`HKEY_CURRENT_USER\Software\Valve\Steam\RunningAppID`. SoulsOverlay reads that value every few
+seconds and nothing else: not the list of programs, and nothing of the game. When it's Elden
+Ring (1245620), Dark Souls Remastered (570940), Dark Souls II (335300 or 236430) or Dark Souls
+III (374320) and another game is selected, it switches, with that game's own characters and
+PBs, but never in the middle of a boss fight. Pick another game by hand and it leaves it alone
+until that game closes.
+
+It can't tell on a console through a capture card, or when the game runs on another PC: pick
+the game in the window then. To be asked first instead of switching, click **Don't switch by
+itself** in the window, or set `auto_switch = false` under `[game_detect]` in `config.toml`.
+
 ## Game profiles
 
 Profiles are JSON files in `profiles/`. The boss list is where most of the tuning happens:
