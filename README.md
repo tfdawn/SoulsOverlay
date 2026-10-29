@@ -16,7 +16,7 @@ lights up with **NEW PB**.
 <img src="docs/window.png" alt="The SoulsOverlay window" width="380" align="right">
 
 - **Start / Stop** the tracking.
-- **Game:** witches by itself to the game you're playing on Steam (Elden Ring, Dark Souls Remastered, II or III), with that game's characters.
+- **Game:** Switches by itself to the game you're playing on Steam (Elden Ring, Dark Souls Remastered, II or III), with that game's characters.
 - **Character:** Keep separate deaths and PBs for each in-game character. Switch, add or rename them at the top.
 - **Settings** has the Overlay Editor for personalizing the overlay to your liking, save in browser and it auto-applies.
 - **Calibrate** Shows where the program is drawing the games boss bar, if you play on an ultrawide screen or
