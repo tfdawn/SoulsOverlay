@@ -1,7 +1,7 @@
-## What's new in 1.0.8
+## What's new in 1.0.9
 
-- **Dark Souls III works out of the box on 16:9 screens.** The preset is now measured from real game footage at 1080p, so it fits 1920x1080, 2560x1440, 3840x2160 and other 16:9 sizes without calibrating. It reads the boss bar with its yellow damage trail and the boss name, catches YOU DIED with a proper template, and shows DEFEATED the moment the bar hits 0%. Two-boss fights like Demon in Pain and Demon from Below are tracked as well. It's no longer marked WiP.
-- If you calibrated Dark Souls III yourself, your own profile is kept. To switch to the new preset, delete `profiles/dark_souls_3.json` next to the exe and restart.
+- **Dark Souls III: Abyss Watchers' second phase now carries on the same fight.** The cutscene between the phases is almost a minute long, and the overlay used to give up on the fight halfway through, so phase 2 started over as a new fight. Now it waits for the bar to come back and counts it as phase 2, and DEFEATED doesn't show when phase 1 empties. Fire and blood in the cutscene can't pass for the boss bar any more either.
+- **Dark Souls III: the boss bar reads in dark arenas.** The empty part of the bar is see-through, and in dark places like the Abyss Watchers' arena the overlay could lose the bar.
 
 ## How to install
 
