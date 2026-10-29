@@ -10,7 +10,7 @@ import cv2
 import numpy as np
 
 from .capture import Backoff, ObsCapture
-from .config import Config
+from .config import Config, save_top
 from .detect import bossname
 from .detect.analyzer import Analyzer, FrameReading
 from .detect.autofind import auto_find
@@ -211,6 +211,15 @@ class Service:
             if gid not in {g["id"] for g in self.games()}:
                 raise ValueError(f"unknown game {gid}")
             self.set_game(gid)
+            # Start on this game next time too.
+            self.config.game = gid
+            # Before the first-run OBS form is saved there's no config.toml, and
+            # writing one here would skip that form; save_obs adds the game then.
+            if self.config.path is not None and self.config.path.exists():
+                try:
+                    save_top(self.config.path, "game", gid)
+                except OSError as e:
+                    log.warning("couldn't save the game to %s: %s", self.config.path, e)
             await self.bus.publish(Event("game_changed", {"game": gid}))
         elif command == "stop":
             self.stopped = True

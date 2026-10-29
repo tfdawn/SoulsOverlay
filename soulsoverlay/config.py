@@ -175,6 +175,26 @@ def save_section(path: Path, section: str, values: dict):
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def save_top(path: Path, key: str, value):
+    """Write one top-level setting (above the first [section]) into config.toml."""
+    if path.exists():
+        text = path.read_text(encoding="utf-8")
+    else:
+        from .app import bundle_dir
+
+        example = bundle_dir() / "config.example.toml"
+        text = example.read_text(encoding="utf-8") if example.exists() else ""
+    lines = text.splitlines()
+    first = next((i for i, line in enumerate(lines) if line.lstrip().startswith("[")), len(lines))
+    new = f"{key} = {_toml_value(value)}"
+    found = next((i for i in range(first) if re.match(rf"\s*{key}\s*=", lines[i])), None)
+    if found is None:
+        lines.insert(first, new)
+    else:
+        lines[found] = new
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
 def save_obs(path: Path, password: str, source: str):
     """Write the OBS password and source name into config.toml."""
     save_section(path, "obs", {"password": password, "source": source})

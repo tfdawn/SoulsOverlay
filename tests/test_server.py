@@ -335,3 +335,25 @@ def test_hud_left_on_old_files_is_reported_and_new_ones_reload(config, monkeypat
             await ws.close()
 
     with_client(config, body=body)
+
+
+def test_the_picked_game_is_remembered(config, tmp_path):
+    from soulsoverlay.config import load_config
+
+    config.path = tmp_path / "config.toml"
+
+    async def body(client, service):
+        # First run: no config.toml yet, so picking a game mustn't create one
+        # (that would skip the OBS form); saving the OBS details brings it along.
+        r = await client.post("/api/control", json={"command": "game_set", "args": {"game": "dark_souls_3"}},
+                              headers=AUTH)
+        assert r.status == 200 and not config.path.exists()
+        await client.post("/api/launcher/obs", json={"password": "pw", "source": "Game"}, headers=AUTH)
+        assert load_config(config.path).game == "dark_souls_3"
+        await client.post("/api/control", json={"command": "game_set", "args": {"game": "dark_souls_2"}},
+                          headers=AUTH)
+        text = config.path.read_text()
+        assert load_config(config.path).game == "dark_souls_2" and text.count("game = ") == 1
+        assert 'password = "pw"' in text
+
+    with_client(config, body=body)

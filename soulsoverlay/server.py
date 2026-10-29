@@ -30,7 +30,7 @@ import numpy as np
 from aiohttp import WSMsgType, web
 
 from . import __version__, hotkeys, style
-from .config import save_obs, save_section
+from .config import save_obs, save_section, save_top
 from .events import Event
 from .service import Service
 
@@ -299,6 +299,7 @@ class OverlayServer:
         password = str(password)[:500]
         if cfg.path is not None:
             await asyncio.to_thread(save_obs, cfg.path, password, source)
+            await asyncio.to_thread(save_top, cfg.path, "game", cfg.game)
         await self.service.set_obs(password, source)
         return web.json_response({"ok": True})
 
